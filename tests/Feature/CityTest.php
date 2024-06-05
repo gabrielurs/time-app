@@ -6,9 +6,13 @@ use Tests\TestCase;
 
 class CityTest extends TestCase
 {
-    /**
-     * A basic test example.
-     */
+    public function test_application_returns_successfull_response(): void
+    {
+        $response = $this->get('/');
+        $response->assertStatus(200);
+    }
+    
+
 
     public function test_obtain_user_map_position(): void
     {
@@ -91,7 +95,7 @@ class CityTest extends TestCase
         $this->assertNotEmpty($weather->json());
         $this->assertJson($weather->getContent());        
         $this->assertEquals(200, $weather->getStatusCode());
-
+    
         $weatherTranslated = $this->postJson('api/weather_translate', $weather->json());
 
 

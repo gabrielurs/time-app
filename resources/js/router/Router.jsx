@@ -2,6 +2,9 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Home from "../components/Home";
 import NotFoundPage from "../components/NotFoundPage";
+import ErrorPage from "../components/ErrorPage";
+
+const initialState = window.__INITIAL_STATE__;
 
 const Router = () => {
     return (
@@ -11,10 +14,7 @@ const Router = () => {
                     <Route
                         path="*"
                         element={
-                            <ErrorPage
-                                code={initialState.errorCode}
-                                message={initialState.errorMessage}
-                            />
+                            <ErrorPage/>
                         }
                     />
                 ) : (
