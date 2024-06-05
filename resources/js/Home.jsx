@@ -1,38 +1,117 @@
-import React from "react"
+import React from "react";
 
 export default function Home() {
     return (
-        <div class="container mx-auto h-screen w-screen">
-        <div class="flex items-center justify-center h-full">
-            <div class="bg-white shadow-2xl p-6 rounded-2xl border-2 border-gray-50">
-                <div class="flex flex-col">
-                    <div>
-                        <h2 class="font-bold text-gray-600 text-center">Bucharest, Romania</h2>
+        <div className="antialiased min-h-screen bg-gray-100 flex items-center">
+            <div className="w-full max-w-sm mx-auto">
+                {/* Search Bar */}
+                <form class="flex items-center mb-2">
+                    <div class="relative w-full">
+                        <input
+                            type="text"
+                            class="bg-white border text-black text-sm rounded-lg block w-full p-2.5"
+                            placeholder="Search city"
+                            required
+                        />
                     </div>
-                    <div class="my-6">
-                        <div class="flex flex-row space-x-4 items-center">
-                            <div id="icon">
-                                <span>
-                                    <svg class="w-20 h-20 fill-stroke text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-                                        </path>
-                                    </svg>
-                                </span>
+                    <button
+                        type="submit"
+                        class="inline-flex items-center py-2.5 px-3 ml-2 text-sm font-medium text-white bg-black rounded-lg border hover:bg-white hover:text-black"
+                    >
+                        <svg
+                            class="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            ></path>
+                        </svg>
+                    </button>
+                </form>
+
+                {/* Weather Card */}
+                <div className="bg-white shadow rounded-lg p-5 w-full border-solid">
+                    <h2 className="font-bold text-gray-800 text-lg">date</h2>
+
+                    <div>
+                        <div className="flex mt-4 mb-2">
+                            <div className="flex-1">
+                                <div className="text-gray-600 text-sm">
+                                    Location Name : Location Region
+                                </div>
+                                <div className="text-3xl font-bold text-gray-800">
+                                    Temperature
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                    Data condition
+                                </div>
                             </div>
-                            <div id="temp">
-                                <h4 class="text-4xl">12&deg;C</h4>
-                                <p class="text-xs text-gray-500">Feels like +14&deg;C</p>
+                            <div className="w-24">
+                                <img loading="lazy" />
+                            </div>
+                        </div>
+
+                        <div className="flex space-x-2 justify-between border-t dark:border-gray-500">
+                            <div className="flex-1 text-center pt-4 border-r px-5 dark:border-gray-500">
+                                <div className="">date</div>
+                                <div className="">icon</div>
+                                <div className="">Temperature</div>
+                            </div>
+                            <div className="flex-1 text-center pt-4 px-5">
+                                <div className="">date</div>
+                                <div className="">icon</div>
+                                <div className="">Temperature</div>
                             </div>
                         </div>
                     </div>
-                    <div class="w-full place-items-end text-right border-t-2 border-gray-100 mt-2">
-                        <a href="#" class="text-indigo-600 text-xs font-medium">View more</a>
+                </div>
+                {/* First Row */}
+                <div className="flex flex-row">
+                    <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 mr-2 text-center">
+                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <p>icon</p>
+                        <h2>data</h2>
+                    </div>
+                    <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 text-center">
+                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <p>icon</p>
+                        <h2>data</h2>
+                    </div>
+                </div>
+                {/* Second Row */}
+                <div className="flex flex-row">
+                    <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 mr-2 text-center">
+                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <p>icon</p>
+                        <h2>data</h2>
+                    </div>
+                    <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 text-center">
+                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <p>icon</p>
+                        <h2>data</h2>
+                    </div>
+                </div>
+
+                {/* Third row */}
+                <div className="flex flex-row">
+                    <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 mr-2 text-center">
+                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <p>icon</p>
+                        <h2>data</h2>
+                    </div>
+                    <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 text-center">
+                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <p>icon</p>
+                        <h2>data</h2>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    )
+    );
 }
