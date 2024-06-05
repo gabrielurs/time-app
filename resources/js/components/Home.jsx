@@ -1,25 +1,23 @@
 import React from "react";
-
-export default function Home() {
+const Home = () => {
     return (
         <div className="antialiased min-h-screen bg-gray-100 flex items-center">
             <div className="w-full max-w-sm mx-auto">
                 {/* Search Bar */}
-                <form class="flex items-center mb-2">
-                    <div class="relative w-full">
+                <form className="flex items-center mb-2">
+                    <div className="relative w-full">
                         <input
                             type="text"
-                            class="bg-white border text-black text-sm rounded-lg block w-full p-2.5"
+                            className="bg-white border text-black text-sm rounded-lg block w-full p-2.5"
                             placeholder="Search city"
-                            required
                         />
                     </div>
                     <button
                         type="submit"
-                        class="inline-flex items-center py-2.5 px-3 ml-2 text-sm font-medium text-white bg-black rounded-lg border hover:bg-white hover:text-black"
+                        className="inline-flex items-center py-2.5 px-3 ml-2 text-sm font-medium text-white bg-black rounded-lg border hover:bg-white hover:text-black"
                     >
                         <svg
-                            class="w-5 h-5"
+                            className="w-5 h-5"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -115,3 +113,5 @@ export default function Home() {
         </div>
     );
 }
+
+export default Home;
