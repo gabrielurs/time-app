@@ -1,5 +1,85 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
 const Home = () => {
+    const [city, setCity] = useState("");
+
+    const [lat, setLat] = useState("");
+    const [lng, setLng] = useState("");
+
+    const [weather, setWeather] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const today = new Date();
+
+    const options = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+  
+    const formattedDate = today.toLocaleDateString('en-US', options);
+
+    const getCity = async () => {
+        const url = `${import.meta.env.VITE_API_URL}/map`;
+
+        await axios.get(url).then(
+            (response) => {
+                setCity(response.data);
+                getLatLng(response.data);
+            },
+            (error) => {
+                console.log(error);
+            }
+        );
+
+    };
+
+
+    const getLatLng = async (city) => {
+        const url = `${import.meta.env.VITE_API_URL}/city`;
+        await axios.post(url, {
+            city: city
+          })
+          .then((response) => {
+            setLat(response.data.lat);
+            setLng(response.data.lng);
+            
+            getWeather(response.data.lat, response.data.lng);
+          }, (error) => {
+            console.log(error);
+          });
+    }
+
+    const getWeather = async(lat, lng) => {
+        const url = `${import.meta.env.VITE_API_URL}/weather`;
+        await axios.post(url, {
+            lat: lat,
+            lng: lng
+          })
+          .then((response) => {
+            getTranslatedWeather(response.data);
+          }, (error) => {
+            console.log(error);
+          });
+    }
+
+
+    const getTranslatedWeather =  async (weather) => {
+        const url = `${import.meta.env.VITE_API_URL}/weather_translate`;
+        await axios.post(url,weather)
+          .then((response) => {
+            setWeather(response.data);
+          }, (error) => {
+            console.log(error);
+          });
+    }
+
+    useEffect(() => {
+        getCity();
+    }, []);
+
     return (
         <div className="antialiased min-h-screen bg-gray-100 flex items-center">
             <div className="w-full max-w-sm mx-auto">
@@ -24,9 +104,9 @@ const Home = () => {
                             xmlns="http://www.w3.org/2000/svg"
                         >
                             <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                             ></path>
                         </svg>
@@ -35,13 +115,13 @@ const Home = () => {
 
                 {/* Weather Card */}
                 <div className="bg-white shadow rounded-lg p-5 w-full border-solid">
-                    <h2 className="font-bold text-gray-800 text-lg">date</h2>
+                    <h2 className="font-bold text-gray-800 text-lg">{formattedDate}</h2>
 
                     <div>
                         <div className="flex mt-4 mb-2">
                             <div className="flex-1">
                                 <div className="text-gray-600 text-sm">
-                                    Location Name : Location Region
+                                   {city}
                                 </div>
                                 <div className="text-3xl font-bold text-gray-800">
                                     Temperature
@@ -112,6 +192,6 @@ const Home = () => {
             </div>
         </div>
     );
-}
+};
 
 export default Home;
