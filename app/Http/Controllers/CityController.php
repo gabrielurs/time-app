@@ -19,12 +19,15 @@ class CityController extends Controller
         try {
             $user_ip = getenv('REMOTE_ADDR');
             $geo = unserialize(file_get_contents("http://www.geoplugin.net/php.gp?ip=$user_ip"));
-           // $country = $geo["geoplugin_countryName"];
+            $country = $geo["geoplugin_countryName"];
             $city = $geo["geoplugin_city"];
         }catch (Exception $e) {
             return response('City not found', 204);
         }finally{
-            return response()->json($city, 200);
+            return response()->json([
+                'city' => $city,
+                'country' => $country,
+            ], 200);
         }
     }
 

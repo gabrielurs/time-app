@@ -20,6 +20,10 @@ class CityTest extends TestCase
 
         $this->assertNotEmpty($response->json());
         $this->assertJson($response->getContent());
+
+        $this->assertArrayHasKey('city', $response->json());
+        $this->assertArrayHasKey('country', $response->json());
+
         $this->assertEquals(200, $response->getStatusCode());
     }
 
@@ -27,7 +31,9 @@ class CityTest extends TestCase
     {
 
         $response = $this->get('api/map');
-        $city = $this->postJson('api/city', ['city' => $response->json()]);
+
+        $city = $this->postJson('api/city', ['city' => $response['city']]);
+
 
         $this->assertNotEmpty($response->json());
         $this->assertJson($response->getContent());
@@ -49,7 +55,7 @@ class CityTest extends TestCase
     public function test_obtain_city_weather_using_lat_len(): void
     {
         $response = $this->get('api/map');
-        $city = $this->postJson('api/city', ['city' => $response->json()]);
+        $city = $this->postJson('api/city', ['city' => $response['city']]);
 
 
         $this->assertNotEmpty($city->json());
@@ -81,7 +87,7 @@ class CityTest extends TestCase
     public function test_translate_weather_data_to_json(): void
     {
         $response = $this->get('api/map');
-        $city = $this->postJson('api/city', ['city' => $response->json()]);
+        $city = $this->postJson('api/city', ['city' => $response['city']]);
 
         $this->assertNotEmpty($city->json());
         $this->assertJson($city->getContent());
