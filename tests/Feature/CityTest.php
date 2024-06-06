@@ -83,7 +83,6 @@ class CityTest extends TestCase
         $response = $this->get('api/map');
         $city = $this->postJson('api/city', ['city' => $response->json()]);
 
-
         $this->assertNotEmpty($city->json());
         $this->assertJson($city->getContent());
         $this->assertEquals(200, $city->getStatusCode());
@@ -97,7 +96,6 @@ class CityTest extends TestCase
         $this->assertEquals(200, $weather->getStatusCode());
     
         $weatherTranslated = $this->postJson('api/weather_translate', $weather->json());
-
 
         $this->assertNotEmpty($weatherTranslated->json());
         $this->assertJson($weatherTranslated->getContent());
