@@ -3,6 +3,7 @@ import axios from "axios";
 
 const Home = () => {
     const [city, setCity] = useState("");
+    const [country, setCountry] = useState("");
 
     const [lat, setLat] = useState("");
     const [lng, setLng] = useState("");
@@ -26,8 +27,9 @@ const Home = () => {
 
         await axios.get(url).then(
             (response) => {
-                setCity(response.data);
-                getLatLng(response.data);
+                setCity(response.data.city);
+                setCountry(response.data.country);
+                getLatLng(response.data.city);
             },
             (error) => {
                 console.log(error);
@@ -121,7 +123,7 @@ const Home = () => {
                         <div className="flex mt-4 mb-2">
                             <div className="flex-1">
                                 <div className="text-gray-600 text-sm">
-                                   {city}
+                                   {city}, {country}
                                 </div>
                                 <div className="text-3xl font-bold text-gray-800">
                                     Temperature

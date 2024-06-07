@@ -101,8 +101,11 @@ class CityTest extends TestCase
         $this->assertJson($weather->getContent());        
         $this->assertEquals(200, $weather->getStatusCode());
     
+
         $weatherTranslated = $this->postJson('api/weather_translate', $weather->json());
 
+        dd($weatherTranslated->json());
+        
         $this->assertNotEmpty($weatherTranslated->json());
         $this->assertJson($weatherTranslated->getContent());
         $this->assertEquals(200, $weatherTranslated->getStatusCode());
