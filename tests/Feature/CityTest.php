@@ -111,7 +111,33 @@ class CityTest extends TestCase
         $weather->assertStatus(422);
     }
     
-    public function test_translate_weather_data_to_json(): void
+    public function test_translate_astro_data_to_json(): void
+    {
+        $response = $this->get('api/map');
+        $city = $this->postJson('api/city', ['city' => $response['city']]);
+
+        $this->assertNotEmpty($city->json());
+        $this->assertJson($city->getContent());
+        $this->assertEquals(200, $city->getStatusCode());
+        $this->assertArrayHasKey('lat', $city->json());
+        $this->assertArrayHasKey('lng', $city->json());
+
+        $astro = $this->postJson('api/astro', ['lat' => $city['lat'], 'lng' => $city['lng']]);
+        
+        $this->assertNotEmpty($astro->json());
+        $this->assertJson($astro->getContent());        
+        $this->assertEquals(200, $astro->getStatusCode());
+    
+
+        $weatherTranslated = $this->postJson('api/translate_astro', $astro->json());
+
+
+        $this->assertNotEmpty($weatherTranslated->json());
+        $this->assertJson($weatherTranslated->getContent());
+        $this->assertEquals(200, $weatherTranslated->getStatusCode());
+    }
+
+    public function test_translate_meteo_data_to_json(): void
     {
         $response = $this->get('api/map');
         $city = $this->postJson('api/city', ['city' => $response['city']]);
@@ -123,24 +149,18 @@ class CityTest extends TestCase
         $this->assertArrayHasKey('lng', $city->json());
 
         $meteo = $this->postJson('api/meteo', ['lat' => $city['lat'], 'lng' => $city['lng']]);
-        $astro = $this->postJson('api/astro', ['lat' => $city['lat'], 'lng' => $city['lng']]);
-
-
         
-        $this->assertNotEmpty($astro->json());
-        $this->assertJson($astro->getContent());        
-        $this->assertEquals(200, $astro->getStatusCode());
-    
         $this->assertNotEmpty($meteo->json());
         $this->assertJson($meteo->getContent());        
         $this->assertEquals(200, $meteo->getStatusCode());
+    
 
-        $weatherTranslated = $this->postJson('api/weather_translate', $astro->json());
+        $weatherTranslated = $this->postJson('api/translate_meteo', $meteo->json());
+
 
         $this->assertNotEmpty($weatherTranslated->json());
         $this->assertJson($weatherTranslated->getContent());
         $this->assertEquals(200, $weatherTranslated->getStatusCode());
-        
     }
 }
 

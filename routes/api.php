@@ -13,4 +13,5 @@ Route::get('/map', [CityController::class, 'map']);
 Route::post('/city', [CityController::class, 'city']);
 Route::post('/astro', [CityController::class, 'astro']);
 Route::post('/meteo', [CityController::class, 'meteo']);
-Route::post('/weather_translate', [CityController::class, 'weather_translate']);
+Route::post('/translate_astro', [CityController::class, 'translate_astro']);
+Route::post('/translate_meteo', [CityController::class, 'translate_meteo']);

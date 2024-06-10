@@ -12,8 +12,6 @@ use Illuminate\Http\Request;
 
 class CityController extends Controller
 {
-
-
     //Gets the user's location and returns the city
     public function map()
     {
@@ -123,7 +121,7 @@ class CityController extends Controller
     }
 
     // Gets the weather data and translate its data, it has a dictionary that allows for translation
-    public function weather_translate(Request $request)
+    public function translate_astro(Request $request)
     {
         $data = $request;
         $day = $data;
@@ -191,41 +189,7 @@ class CityController extends Controller
             return isset($translations[$property][$value]) ? $translations[$property][$value] : "Unknown value";
         }
 
-        function translateGeneralWeather($cloudcover, $seeing, $transparency, $lifted_index, $wind10m_speed, $relative_humidity)
-        {
-            //Total cloud cover less than 20% = Clear
-            if ($cloudcover <= 1) {
-                return "Clear";
-            }
-            //Total cloud cover between 20%-60% = Cloudy
-            if ($cloudcover > 3 && $cloudcover <= 6) {
-                return "Cloudy";
-            }
-            //Total cloud cover between 20%-80% = Partly Cloudy
-            if ($cloudcover > 5 && $cloudcover < 7) {
-                return 'Partly Cloudy';
-            }
-            //Total  cloud cover over 80% = Very cloudy
-            if ($cloudcover > 7) {
-                return 'Very cloudy';
-            }
-            //Relative humidity over 90% with total cloud cover less than 60% = Foggy
-            if ($cloudcover < 6 && $relative_humidity > 90) {
-                return 'Foggy';
-            }
-            //Precipitation rate less than 4mm/hr with cloud cover more than 80% = Light rain or showers
-
-            //Precipitation rate less than 4mm/hr with cloud cover between 60%-80% = Occasional Showers
-            //Precipitation rate less than 4mm/hr less than 60% = Isolated Showers
-            //Precipitation rate less than 4mm/hr = Light or occasional snow
-            //Precipitation rate over 4mm/hr = Rain
-            //Precipitation rate over 4mm/hr = Snow
-            //Precipitation type to be ice pellets or freezing rain = Mixed
-            //Lifted Index less than -5 with precipitation rate below 4mm/hr = Thunderstorm possible
-            //Lifted Index less than -5 with precipitation rate over 4mm/hr = Thunderstorm
-            //Lifted index less than -5 with precipitation type rain Thunderstorm with rain 
-            //Sustained wind speed over 10.8m/s (force 6 or above) = Windy
-        }
+        $hour = date('H');
 
         //This for recieves the array then reorgranizes it and translate it if needed
         foreach ($data['dataseries']['data'] as $entry) {
@@ -233,13 +197,13 @@ class CityController extends Controller
             $day = new DateTime();
 
             // cast becasue timepoint is str
-            if ((int) $timepoint <= 24) {
+            if ((int) $timepoint <= ($hour + 2) && (int) $timepoint >= ($hour)) {
                 //There is a format because i need the day as a string 
                 $format = $day->format('Y/m/d');
                 $translation[$format][$timepoint] = [
                     'cloudcover' => translate('cloudcover', $entry['cloudcover']),
-                    // 'seeing' => translate('seeing', $entry['seeing']),
-                    // 'transparency' => translate('transparency', $entry['transparency']),
+                    'seeing' => translate('seeing', $entry['seeing']),
+                    'transparency' => translate('transparency', $entry['transparency']),
                     'lifted_index' => translate('lifted_index', $entry['lifted_index']),
                     'rh2m' => $entry['rh2m'],
                     'wind10m_direction' => $entry['wind10m_direction'],
@@ -255,8 +219,8 @@ class CityController extends Controller
 
                 $translation[$format] = [
                     'cloudcover' => translate('cloudcover', $entry['cloudcover']),
-                    // 'seeing' => translate('seeing', $entry['seeing']),
-                    // 'transparency' => translate('transparency', $entry['transparency']),
+                    'seeing' => translate('seeing', $entry['seeing']),
+                    'transparency' => translate('transparency', $entry['transparency']),
                     'lifted_index' => translate('lifted_index', $entry['lifted_index']),
                     'rh2m' => $entry['rh2m'],
                     'wind10m_direction' => $entry['wind10m_direction'],
@@ -272,8 +236,8 @@ class CityController extends Controller
                 $format = $day->format('Y/m/d');
                 $translation[$format] = [
                     'cloudcover' => translate('cloudcover', $entry['cloudcover']),
-                    // 'seeing' => translate('seeing', $entry['seeing']),
-                    // 'transparency' => translate('transparency', $entry['transparency']),
+                    'seeing' => translate('seeing', $entry['seeing']),
+                    'transparency' => translate('transparency', $entry['transparency']),
                     'lifted_index' => translate('lifted_index', $entry['lifted_index']),
                     'rh2m' => $entry['rh2m'],
                     'wind10m_direction' => $entry['wind10m_direction'],
@@ -284,6 +248,33 @@ class CityController extends Controller
             }
         }
 
+        return response()->json($translation);
+    }
+
+
+    public function translate_meteo(Request $request)
+    {
+        $data = $request;
+        $day = $data;
+        $translation = array();
+        $hour = date('H');
+
+        //This for recieves the array then reorgranizes it and translate it if needed
+        foreach ($data['dataseries']['data'] as $entry) {
+            $timepoint = $entry['@attributes']['timepoint'];
+            $day = new DateTime();
+
+            // cast becasue timepoint is str
+            if ((int) $timepoint <= ($hour + 2) && (int) $timepoint >= ($hour)) {
+                //There is a format because i need the day as a string 
+                $format = $day->format('Y/m/d');
+                $translation[$format][$timepoint] = [
+                    'msl_pressure' => $entry['msl_pressure'],
+                    'prec_amount' => $entry['prec_amount'],
+                    'snow_depth' => $entry['snow_depth'],
+                ];
+            }
+        }
         return response()->json($translation);
     }
 }
