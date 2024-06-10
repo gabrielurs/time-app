@@ -52,7 +52,7 @@ class CityTest extends TestCase
         $city->assertStatus(404);
     }
 
-    public function test_obtain_city_weather_using_lat_len(): void
+    public function test_obtain_city_astro_weather_using_lat_len(): void
     {
         $response = $this->get('api/map');
         $city = $this->postJson('api/city', ['city' => $response['city']]);
@@ -64,13 +64,33 @@ class CityTest extends TestCase
         $this->assertArrayHasKey('lat', $city->json());
         $this->assertArrayHasKey('lng', $city->json());
 
-        $weather = $this->postJson('api/weather', ['lat' => $city['lat'], 'lng' => $city['lng']]);
-        dd($weather->json());
+        $astro = $this->postJson('api/astro', ['lat' => $city['lat'], 'lng' => $city['lng']]);
 
-        $this->assertNotEmpty($weather->json());
-        $this->assertJson($weather->getContent());
+        $this->assertNotEmpty($astro->json());
+        $this->assertJson($astro->getContent());
 
-        $this->assertEquals(200, $weather->getStatusCode());
+        $this->assertEquals(200, $astro->getStatusCode());
+    }
+
+
+    public function test_obtain_city_meteo_weather_using_lat_len(): void
+    {
+        $response = $this->get('api/map');
+        $city = $this->postJson('api/city', ['city' => $response['city']]);
+
+
+        $this->assertNotEmpty($city->json());
+        $this->assertJson($city->getContent());
+        $this->assertEquals(200, $city->getStatusCode());
+        $this->assertArrayHasKey('lat', $city->json());
+        $this->assertArrayHasKey('lng', $city->json());
+
+        $meteo = $this->postJson('api/meteo', ['lat' => $city['lat'], 'lng' => $city['lng']]);
+
+        $this->assertNotEmpty($meteo->json());
+        $this->assertJson($meteo->getContent());
+
+        $this->assertEquals(200, $meteo->getStatusCode());
     }
 
     public function test_invalid_city_name_returns_error(): void
@@ -79,9 +99,15 @@ class CityTest extends TestCase
         $city->assertStatus(422);
     }
 
-    public function test_missing_lat_lng_for_weather_returns_error(): void
+    public function test_missing_lat_lng_for_astro_returns_error(): void
     {
-        $weather = $this->postJson('api/weather', ['lat' => null, 'lng' => null]);
+        $weather = $this->postJson('api/astro', ['lat' => null, 'lng' => null]);
+        $weather->assertStatus(422);
+    }
+
+    public function test_missing_lat_lng_for_meteo_returns_error(): void
+    {
+        $weather = $this->postJson('api/meteo', ['lat' => null, 'lng' => null]);
         $weather->assertStatus(422);
     }
     
@@ -96,19 +122,20 @@ class CityTest extends TestCase
         $this->assertArrayHasKey('lat', $city->json());
         $this->assertArrayHasKey('lng', $city->json());
 
-        $weather = $this->postJson('api/weather', ['lat' => $city['lat'], 'lng' => $city['lng']]);
-        $weatherSeparated = $weather->json();
+        $meteo = $this->postJson('api/meteo', ['lat' => $city['lat'], 'lng' => $city['lng']]);
+        $astro = $this->postJson('api/astro', ['lat' => $city['lat'], 'lng' => $city['lng']]);
 
-        $meteo = $weatherSeparated['weather_meteo'];
-        $astro = $weatherSeparated['weather_astro'];
 
-        dd($meteo);
         
-        $this->assertNotEmpty($weather->json());
-        $this->assertJson($weather->getContent());        
-        $this->assertEquals(200, $weather->getStatusCode());
+        $this->assertNotEmpty($astro->json());
+        $this->assertJson($astro->getContent());        
+        $this->assertEquals(200, $astro->getStatusCode());
     
-        $weatherTranslated = $this->postJson('api/weather_translate', $weather->json());
+        $this->assertNotEmpty($meteo->json());
+        $this->assertJson($meteo->getContent());        
+        $this->assertEquals(200, $meteo->getStatusCode());
+
+        $weatherTranslated = $this->postJson('api/weather_translate', $astro->json());
 
         $this->assertNotEmpty($weatherTranslated->json());
         $this->assertJson($weatherTranslated->getContent());

@@ -11,5 +11,6 @@ Route::get('/user', function (Request $request) {
 
 Route::get('/map', [CityController::class, 'map']);
 Route::post('/city', [CityController::class, 'city']);
-Route::post('/weather', [CityController::class, 'weather']);
+Route::post('/astro', [CityController::class, 'astro']);
+Route::post('/meteo', [CityController::class, 'meteo']);
 Route::post('/weather_translate', [CityController::class, 'weather_translate']);

@@ -56,7 +56,7 @@ class CityController extends Controller
 
 
     //obtains the lat and long coordinates and does a curl to obtain weather data
-    public function weather(Request $request)
+    public function meteo(Request $request)
     {
 
         $validated = $request->validate([
@@ -83,7 +83,25 @@ class CityController extends Controller
             $json = json_encode($xml);
             $meteo = json_decode($json, TRUE);
 
+            return response()->json($meteo);
+        } catch (Exception $e) {
+            return response(['message' => 'City not found'], 404);
+        }
+    }
 
+
+    public function astro(Request $request)
+    {
+        $validated = $request->validate([
+            'lng' => 'required',
+            'lat' => 'required',
+        ]);
+
+        if (!$validated) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        try {
             $url = 'https://www.7timer.info/bin/astro.php?lon=' . $request->lng . '&lat=' . $request->lat . '&ac=0&unit=metric&output=xml&tzshift=0';
             $data2 = array();
             $ch = curl_init($url);
@@ -98,19 +116,11 @@ class CityController extends Controller
             $json = json_encode($xml);
             $astro = json_decode($json, TRUE);
 
-
-
-            return response()->json([
-                'weather_meteo' => $meteo,
-                'weather_astro' => $astro
-            ]);
-
-
+            return response()->json($astro);
         } catch (Exception $e) {
             return response(['message' => 'City not found'], 404);
         }
     }
-
 
     // Gets the weather data and translate its data, it has a dictionary that allows for translation
     public function weather_translate(Request $request)
