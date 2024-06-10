@@ -65,6 +65,7 @@ class CityTest extends TestCase
         $this->assertArrayHasKey('lng', $city->json());
 
         $weather = $this->postJson('api/weather', ['lat' => $city['lat'], 'lng' => $city['lng']]);
+        dd($weather->json());
 
         $this->assertNotEmpty($weather->json());
         $this->assertJson($weather->getContent());
@@ -96,16 +97,19 @@ class CityTest extends TestCase
         $this->assertArrayHasKey('lng', $city->json());
 
         $weather = $this->postJson('api/weather', ['lat' => $city['lat'], 'lng' => $city['lng']]);
+        $weatherSeparated = $weather->json();
 
+        $meteo = $weatherSeparated['weather_meteo'];
+        $astro = $weatherSeparated['weather_astro'];
+
+        dd($meteo);
+        
         $this->assertNotEmpty($weather->json());
         $this->assertJson($weather->getContent());        
         $this->assertEquals(200, $weather->getStatusCode());
     
-
         $weatherTranslated = $this->postJson('api/weather_translate', $weather->json());
 
-        dd($weatherTranslated->json());
-        
         $this->assertNotEmpty($weatherTranslated->json());
         $this->assertJson($weatherTranslated->getContent());
         $this->assertEquals(200, $weatherTranslated->getStatusCode());

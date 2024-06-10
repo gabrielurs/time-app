@@ -69,7 +69,7 @@ class CityController extends Controller
         }
 
         try {
-            $url = 'https://www.7timer.info/bin/astro.php?lon=' . $request->lng . '&lat=' . $request->lat . '&ac=0&unit=metric&output=xml&tzshift=0';
+            $url = 'https://www.7timer.info/bin/meteo.php?lon=' . $request->lng . '&lat=' . $request->lat . '&ac=0&unit=metric&output=xml&tzshift=0';
             $data = array();
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -81,9 +81,31 @@ class CityController extends Controller
 
             $xml = simplexml_load_string($response);
             $json = json_encode($xml);
-            $array = json_decode($json, TRUE);
+            $meteo = json_decode($json, TRUE);
 
-            return response()->json($array);
+
+            $url = 'https://www.7timer.info/bin/astro.php?lon=' . $request->lng . '&lat=' . $request->lat . '&ac=0&unit=metric&output=xml&tzshift=0';
+            $data2 = array();
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data2));
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $xml = simplexml_load_string($response);
+            $json = json_encode($xml);
+            $astro = json_decode($json, TRUE);
+
+
+
+            return response()->json([
+                'weather_meteo' => $meteo,
+                'weather_astro' => $astro
+            ]);
+
+
         } catch (Exception $e) {
             return response(['message' => 'City not found'], 404);
         }
@@ -159,6 +181,42 @@ class CityController extends Controller
             return isset($translations[$property][$value]) ? $translations[$property][$value] : "Unknown value";
         }
 
+        function translateGeneralWeather($cloudcover, $seeing, $transparency, $lifted_index, $wind10m_speed, $relative_humidity)
+        {
+            //Total cloud cover less than 20% = Clear
+            if ($cloudcover <= 1) {
+                return "Clear";
+            }
+            //Total cloud cover between 20%-60% = Cloudy
+            if ($cloudcover > 3 && $cloudcover <= 6) {
+                return "Cloudy";
+            }
+            //Total cloud cover between 20%-80% = Partly Cloudy
+            if ($cloudcover > 5 && $cloudcover < 7) {
+                return 'Partly Cloudy';
+            }
+            //Total  cloud cover over 80% = Very cloudy
+            if ($cloudcover > 7) {
+                return 'Very cloudy';
+            }
+            //Relative humidity over 90% with total cloud cover less than 60% = Foggy
+            if ($cloudcover < 6 && $relative_humidity > 90) {
+                return 'Foggy';
+            }
+            //Precipitation rate less than 4mm/hr with cloud cover more than 80% = Light rain or showers
+
+            //Precipitation rate less than 4mm/hr with cloud cover between 60%-80% = Occasional Showers
+            //Precipitation rate less than 4mm/hr less than 60% = Isolated Showers
+            //Precipitation rate less than 4mm/hr = Light or occasional snow
+            //Precipitation rate over 4mm/hr = Rain
+            //Precipitation rate over 4mm/hr = Snow
+            //Precipitation type to be ice pellets or freezing rain = Mixed
+            //Lifted Index less than -5 with precipitation rate below 4mm/hr = Thunderstorm possible
+            //Lifted Index less than -5 with precipitation rate over 4mm/hr = Thunderstorm
+            //Lifted index less than -5 with precipitation type rain Thunderstorm with rain 
+            //Sustained wind speed over 10.8m/s (force 6 or above) = Windy
+        }
+
         //This for recieves the array then reorgranizes it and translate it if needed
         foreach ($data['dataseries']['data'] as $entry) {
             $timepoint = $entry['@attributes']['timepoint'];
@@ -168,16 +226,16 @@ class CityController extends Controller
             if ((int) $timepoint <= 24) {
                 //There is a format because i need the day as a string 
                 $format = $day->format('Y/m/d');
-                  $translation[$format][$timepoint] = [
-                        'cloudcover' => translate('cloudcover', $entry['cloudcover']),
-                        'seeing' => translate('seeing', $entry['seeing']),
-                        'transparency' => translate('transparency', $entry['transparency']),
-                        'lifted_index' => translate('lifted_index', $entry['lifted_index']),
-                        'rh2m' => $entry['rh2m'],
-                        'wind10m_direction' => $entry['wind10m_direction'],
-                        'wind10m_speed' => translate('wind10m_speed', $entry['wind10m_speed']),
-                        'temp2m' => $entry['temp2m'],
-                        'prec_type' => $entry['prec_type'],
+                $translation[$format][$timepoint] = [
+                    'cloudcover' => translate('cloudcover', $entry['cloudcover']),
+                    // 'seeing' => translate('seeing', $entry['seeing']),
+                    // 'transparency' => translate('transparency', $entry['transparency']),
+                    'lifted_index' => translate('lifted_index', $entry['lifted_index']),
+                    'rh2m' => $entry['rh2m'],
+                    'wind10m_direction' => $entry['wind10m_direction'],
+                    'wind10m_speed' => translate('wind10m_speed', $entry['wind10m_speed']),
+                    'temp2m' => $entry['temp2m'],
+                    'prec_type' => $entry['prec_type'],
                 ];
             }
             //This means it takes the weather from 12PM
@@ -186,15 +244,15 @@ class CityController extends Controller
                 $format = $day->format('Y/m/d');
 
                 $translation[$format] = [
-                        'cloudcover' => translate('cloudcover', $entry['cloudcover']),
-                        'seeing' => translate('seeing', $entry['seeing']),
-                        'transparency' => translate('transparency', $entry['transparency']),
-                        'lifted_index' => translate('lifted_index', $entry['lifted_index']),
-                        'rh2m' => $entry['rh2m'],
-                        'wind10m_direction' => $entry['wind10m_direction'],
-                        'wind10m_speed' => translate('wind10m_speed', $entry['wind10m_speed']),
-                        'temp2m' => $entry['temp2m'],
-                        'prec_type' => $entry['prec_type'],
+                    'cloudcover' => translate('cloudcover', $entry['cloudcover']),
+                    // 'seeing' => translate('seeing', $entry['seeing']),
+                    // 'transparency' => translate('transparency', $entry['transparency']),
+                    'lifted_index' => translate('lifted_index', $entry['lifted_index']),
+                    'rh2m' => $entry['rh2m'],
+                    'wind10m_direction' => $entry['wind10m_direction'],
+                    'wind10m_speed' => translate('wind10m_speed', $entry['wind10m_speed']),
+                    'temp2m' => $entry['temp2m'],
+                    'prec_type' => $entry['prec_type'],
                 ];
             }
 
@@ -203,15 +261,15 @@ class CityController extends Controller
                 $day->modify('+2 days');
                 $format = $day->format('Y/m/d');
                 $translation[$format] = [
-                        'cloudcover' => translate('cloudcover', $entry['cloudcover']),
-                        'seeing' => translate('seeing', $entry['seeing']),
-                        'transparency' => translate('transparency', $entry['transparency']),
-                        'lifted_index' => translate('lifted_index', $entry['lifted_index']),
-                        'rh2m' => $entry['rh2m'],
-                        'wind10m_direction' => $entry['wind10m_direction'],
-                        'wind10m_speed' => translate('wind10m_speed', $entry['wind10m_speed']),
-                        'temp2m' => $entry['temp2m'],
-                        'prec_type' => $entry['prec_type'],
+                    'cloudcover' => translate('cloudcover', $entry['cloudcover']),
+                    // 'seeing' => translate('seeing', $entry['seeing']),
+                    // 'transparency' => translate('transparency', $entry['transparency']),
+                    'lifted_index' => translate('lifted_index', $entry['lifted_index']),
+                    'rh2m' => $entry['rh2m'],
+                    'wind10m_direction' => $entry['wind10m_direction'],
+                    'wind10m_speed' => translate('wind10m_speed', $entry['wind10m_speed']),
+                    'temp2m' => $entry['temp2m'],
+                    'prec_type' => $entry['prec_type'],
                 ];
             }
         }
