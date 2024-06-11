@@ -12,6 +12,68 @@ use Illuminate\Http\Request;
 
 class CityController extends Controller
 {
+
+    public function translate($property, $value)
+    {
+        //This data is obtained from 7Weather Api
+        $translations = [
+            'cloudcover' => [
+                1 => "0% - 6%",
+                2 => "6% - 19%",
+                3 => "19% - 31%",
+                4 => "31% - 44%",
+                5 => "44% - 56%",
+                6 => "56% - 69%",
+                7 => "69% - 81%",
+                8 => "81% - 94%",
+                9 => "94% - 100%",
+            ],
+            'seeing' => [
+                1 => '<0.5',
+                2 => '0.5"-0.75"',
+                3 => '0.75"-1"',
+                4 => '0.75"-1"',
+                5 => '1"-1.25"',
+                6 => '1.25"-1.5"',
+                7 => '1.5"-2"',
+                8 => '2"-2.5"',
+                9 => '>2.5"',
+            ],
+            'transparency' => [
+                1 => '<0.3',
+                2 => '0.3-0.4',
+                3 => '0.4-0.5',
+                4 => '0.5-0.6',
+                5 => '0.6-0.7',
+                6 => '0.7-0.85',
+                7 => '0.85-1',
+                8 => '>1',
+            ],
+            'lifted_index' => [
+                -10 => 'Below -7',
+                -6 => '-7 to -5',
+                -4 => '-5 to -3',
+                -1 => '-3 to 0',
+                2 => '0 to 4',
+                6 => '4 to 8',
+                10 => '8 to 11',
+                15 => 'Over 11',
+            ],
+            'wind10m_speed' => [
+                1 => 'Below 0.3m/s (calm)',
+                2 => '0.3-3.4m/s (light)',
+                3 => '3.4-8.0m/s (moderate)',
+                4 => '8.0-10.8m/s (fresh)',
+                5 => '10.8-17.2m/s (strong)',
+                6 => '17.2-24.5m/s (gale)',
+                7 => '24.5-32.6m/s (storm)',
+                8 => 'Over 32.6m/s (hurricane)',
+            ],
+
+        ];
+
+        return isset($translations[$property][$value]) ? $translations[$property][$value] : "Unknown value";
+    }
     //Gets the user's location and returns the city
     public function map()
     {
@@ -115,6 +177,7 @@ class CityController extends Controller
             $astro = json_decode($json, TRUE);
 
             return response()->json($astro);
+
         } catch (Exception $e) {
             return response(['message' => 'City not found'], 404);
         }
@@ -126,68 +189,6 @@ class CityController extends Controller
         $data = $request;
         $day = $data;
         $translation = array();
-
-        function translate($property, $value)
-        {
-            //This data is obtained from 7Weather Api
-            $translations = [
-                'cloudcover' => [
-                    1 => "0% - 6%",
-                    2 => "6% - 19%",
-                    3 => "19% - 31%",
-                    4 => "31% - 44%",
-                    5 => "44% - 56%",
-                    6 => "56% - 69%",
-                    7 => "69% - 81%",
-                    8 => "81% - 94%",
-                    9 => "94% - 100%",
-                ],
-                'seeing' => [
-                    1 => '<0.5',
-                    2 => '0.5"-0.75"',
-                    3 => '0.75"-1"',
-                    4 => '0.75"-1"',
-                    5 => '1"-1.25"',
-                    6 => '1.25"-1.5"',
-                    7 => '1.5"-2"',
-                    8 => '2"-2.5"',
-                    9 => '>2.5"',
-                ],
-                'transparency' => [
-                    1 => '<0.3',
-                    2 => '0.3-0.4',
-                    3 => '0.4-0.5',
-                    4 => '0.5-0.6',
-                    5 => '0.6-0.7',
-                    6 => '0.7-0.85',
-                    7 => '0.85-1',
-                    8 => '>1',
-                ],
-                'lifted_index' => [
-                    -10 => 'Below -7',
-                    -6 => '-7 to -5',
-                    -4 => '-5 to -3',
-                    -1 => '-3 to 0',
-                    2 => '0 to 4',
-                    6 => '4 to 8',
-                    10 => '8 to 11',
-                    15 => 'Over 11',
-                ],
-                'wind10m_speed' => [
-                    1 => 'Below 0.3m/s (calm)',
-                    2 => '0.3-3.4m/s (light)',
-                    3 => '3.4-8.0m/s (moderate)',
-                    4 => '8.0-10.8m/s (fresh)',
-                    5 => '10.8-17.2m/s (strong)',
-                    6 => '17.2-24.5m/s (gale)',
-                    7 => '24.5-32.6m/s (storm)',
-                    8 => 'Over 32.6m/s (hurricane)',
-                ],
-
-            ];
-
-            return isset($translations[$property][$value]) ? $translations[$property][$value] : "Unknown value";
-        }
 
         $hour = date('H');
 
@@ -201,13 +202,13 @@ class CityController extends Controller
                 //There is a format because i need the day as a string 
                 $format = $day->format('Y/m/d');
                 $translation[$format][$timepoint] = [
-                    'cloudcover' => translate('cloudcover', $entry['cloudcover']),
-                    'seeing' => translate('seeing', $entry['seeing']),
-                    'transparency' => translate('transparency', $entry['transparency']),
-                    'lifted_index' => translate('lifted_index', $entry['lifted_index']),
+                    'cloudcover' => $this->translate('cloudcover', $entry['cloudcover']),
+                    'seeing' => $this->translate('seeing', $entry['seeing']),
+                    'transparency' => $this->translate('transparency', $entry['transparency']),
+                    'lifted_index' => $this->translate('lifted_index', $entry['lifted_index']),
                     'rh2m' => $entry['rh2m'],
                     'wind10m_direction' => $entry['wind10m_direction'],
-                    'wind10m_speed' => translate('wind10m_speed', $entry['wind10m_speed']),
+                    'wind10m_speed' => $this->translate('wind10m_speed', $entry['wind10m_speed']),
                     'temp2m' => $entry['temp2m'],
                     'prec_type' => $entry['prec_type'],
                 ];
@@ -218,13 +219,13 @@ class CityController extends Controller
                 $format = $day->format('Y/m/d');
 
                 $translation[$format] = [
-                    'cloudcover' => translate('cloudcover', $entry['cloudcover']),
-                    'seeing' => translate('seeing', $entry['seeing']),
-                    'transparency' => translate('transparency', $entry['transparency']),
-                    'lifted_index' => translate('lifted_index', $entry['lifted_index']),
+                    'cloudcover' => $this->translate('cloudcover', $entry['cloudcover']),
+                    'seeing' => $this->translate('seeing', $entry['seeing']),
+                    'transparency' => $this->translate('transparency', $entry['transparency']),
+                    'lifted_index' => $this->translate('lifted_index', $entry['lifted_index']),
                     'rh2m' => $entry['rh2m'],
                     'wind10m_direction' => $entry['wind10m_direction'],
-                    'wind10m_speed' => translate('wind10m_speed', $entry['wind10m_speed']),
+                    'wind10m_speed' => $this->translate('wind10m_speed', $entry['wind10m_speed']),
                     'temp2m' => $entry['temp2m'],
                     'prec_type' => $entry['prec_type'],
                 ];
@@ -235,13 +236,13 @@ class CityController extends Controller
                 $day->modify('+2 days');
                 $format = $day->format('Y/m/d');
                 $translation[$format] = [
-                    'cloudcover' => translate('cloudcover', $entry['cloudcover']),
-                    'seeing' => translate('seeing', $entry['seeing']),
-                    'transparency' => translate('transparency', $entry['transparency']),
-                    'lifted_index' => translate('lifted_index', $entry['lifted_index']),
+                    'cloudcover' => $this->translate('cloudcover', $entry['cloudcover']),
+                    'seeing' => $this->translate('seeing', $entry['seeing']),
+                    'transparency' => $this->translate('transparency', $entry['transparency']),
+                    'lifted_index' => $this->translate('lifted_index', $entry['lifted_index']),
                     'rh2m' => $entry['rh2m'],
                     'wind10m_direction' => $entry['wind10m_direction'],
-                    'wind10m_speed' => translate('wind10m_speed', $entry['wind10m_speed']),
+                    'wind10m_speed' => $this->translate('wind10m_speed', $entry['wind10m_speed']),
                     'temp2m' => $entry['temp2m'],
                     'prec_type' => $entry['prec_type'],
                 ];
@@ -276,5 +277,10 @@ class CityController extends Controller
             }
         }
         return response()->json($translation);
+    }
+
+    public function unite_translations(Request $request)
+    {
+        return true;
     }
 }
