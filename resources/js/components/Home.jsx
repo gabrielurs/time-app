@@ -43,12 +43,6 @@ const Home = () => {
               if (!astroResponse.data) throw new Error('Astro data is empty');
               const astroData = astroResponse.data;
 
-
-              const meteoResponse = await axios.post(`${import.meta.env.VITE_API_URL}/meteo`, {
-                lat: cityData.lat,
-                lng: cityData.lng
-              });
-              const meteoData = meteoResponse.data;
               
                const astroTranslationResponse = await axios.post(`${import.meta.env.VITE_API_URL}/translate_astro`, { astro: astroData });
                if (!astroTranslationResponse.data) throw new Error('Astro data is empty');

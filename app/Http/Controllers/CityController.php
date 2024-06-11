@@ -211,7 +211,7 @@ class CityController extends Controller
     // Gets the weather data and translate its data, it has a dictionary that allows for translation
     public function translate_astro(Request $request)
     {
-        $data = $request;
+        $data = $request->input('astro');
         $day = $data;
         $translation = array();
 
@@ -281,7 +281,7 @@ class CityController extends Controller
 
     public function translate_meteo(Request $request)
     {
-        $data = $request;
+        $data = $request->input('meteo');
         $day = $data;
         $translation = array();
         $hour = date('H');
@@ -335,4 +335,5 @@ class CityController extends Controller
 
         return response()->json($translation);
     }
+    
 }

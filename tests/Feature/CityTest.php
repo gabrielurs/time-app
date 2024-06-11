@@ -126,7 +126,7 @@ class CityTest extends TestCase
         $this->assertJson($astro->getContent());        
         $this->assertEquals(200, $astro->getStatusCode());
 
-        $weatherTranslated = $this->postJson('api/translate_astro', $astro->json());
+        $weatherTranslated = $this->postJson('api/translate_astro', ['astro' => $astro->json()]);
 
         $this->assertNotEmpty($weatherTranslated->json());
         $this->assertJson($weatherTranslated->getContent());
@@ -150,7 +150,7 @@ class CityTest extends TestCase
         $this->assertJson($meteo->getContent());        
         $this->assertEquals(200, $meteo->getStatusCode());
 
-        $weatherTranslated = $this->postJson('api/translate_meteo', $meteo->json());
+        $weatherTranslated = $this->postJson('api/translate_meteo', ['meteo' => $meteo->json()]);
 
         $this->assertNotEmpty($weatherTranslated->json());
         $this->assertJson($weatherTranslated->getContent());
@@ -175,7 +175,7 @@ class CityTest extends TestCase
         $this->assertJson($astro->getContent());        
         $this->assertEquals(200, $astro->getStatusCode());
 
-        $astroTranslated = $this->postJson('api/translate_astro', $astro->json());
+        $astroTranslated = $this->postJson('api/translate_astro', ['astro' => $astro->json()]);
 
         $this->assertNotEmpty($astroTranslated->json());
         $this->assertJson($astroTranslated->getContent());
@@ -186,7 +186,7 @@ class CityTest extends TestCase
         $this->assertNotEmpty($meteo->json());
         $this->assertJson($meteo->getContent());        
         $this->assertEquals(200, $meteo->getStatusCode());
-        $meteoTranslated = $this->postJson('api/translate_meteo', $meteo->json());
+        $meteoTranslated = $this->postJson('api/translate_meteo', ['meteo' => $meteo->json()]);
         
         $this->assertNotEmpty($meteoTranslated->json());
         $this->assertJson($meteoTranslated->getContent());
