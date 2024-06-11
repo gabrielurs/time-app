@@ -4,12 +4,8 @@ import axios from "axios";
 const Home = () => {
     const [city, setCity] = useState("");
     const [country, setCountry] = useState("");
+    const [loading, setLoading] = useState("");
 
-    const [lat, setLat] = useState("");
-    const [lng, setLng] = useState("");
-
-    const [weather, setWeather] = useState([]);
-    const [loading, setLoading] = useState(false);
 
     const today = new Date();
 
@@ -22,64 +18,50 @@ const Home = () => {
   
     const formattedDate = today.toLocaleDateString('en-US', options);
 
-    const getCity = async () => {
-        const url = `${import.meta.env.VITE_API_URL}/map`;
+ 
 
-        await axios.get(url).then(
-            (response) => {
-                setCity(response.data.city);
-                setCountry(response.data.country);
-                getLatLng(response.data.city);
-            },
-            (error) => {
-                console.log(error);
-            }
-        );
-
-    };
-
-
-    const getLatLng = async (city) => {
-        const url = `${import.meta.env.VITE_API_URL}/city`;
-        await axios.post(url, {
-            city: city
-          })
-          .then((response) => {
-            setLat(response.data.lat);
-            setLng(response.data.lng);
-            
-            getWeather(response.data.lat, response.data.lng);
-          }, (error) => {
-            console.log(error);
-          });
-    }
-
-    const getWeather = async(lat, lng) => {
-        const url = `${import.meta.env.VITE_API_URL}/weather`;
-        await axios.post(url, {
-            lat: lat,
-            lng: lng
-          })
-          .then((response) => {
-            getTranslatedWeather(response.data);
-          }, (error) => {
-            console.log(error);
-          });
-    }
-
-
-    const getTranslatedWeather =  async (weather) => {
-        const url = `${import.meta.env.VITE_API_URL}/weather_translate`;
-        await axios.post(url,weather)
-          .then((response) => {
-            setWeather(response.data);
-          }, (error) => {
-            console.log(error);
-          });
-    }
 
     useEffect(() => {
-        getCity();
+        const fetchData = async () => {
+            try {
+
+             const mapResponse = await axios.get(`${import.meta.env.VITE_API_URL}/map`);
+             if(!mapResponse.data) throw new Error('Map is empty');
+             const mapData = mapResponse.data;
+             setCity(mapData.city);
+             setCountry(mapData.country);
+
+
+              const cityResponse = await axios.post(`${import.meta.env.VITE_API_URL}/city`, { city: mapData.city });
+              if (!cityResponse.data) throw new Error('City data is empty');
+             const cityData = cityResponse.data;
+
+              const astroResponse = await axios.post(`${import.meta.env.VITE_API_URL}/astro`, {
+                lat: cityData.lat,
+                lng: cityData.lng
+              });
+              if (!astroResponse.data) throw new Error('Astro data is empty');
+              const astroData = astroResponse.data;
+
+
+              const meteoResponse = await axios.post(`${import.meta.env.VITE_API_URL}/meteo`, {
+                lat: cityData.lat,
+                lng: cityData.lng
+              });
+              const meteoData = meteoResponse.data;
+              
+               const astroTranslationResponse = await axios.post(`${import.meta.env.VITE_API_URL}/translate_astro`, { astro: astroData });
+               if (!astroTranslationResponse.data) throw new Error('Astro data is empty');
+              
+
+            } catch (err) {
+              console.log(err);
+            } finally {
+              setLoading(false);
+            }
+          };
+      
+          fetchData();
     }, []);
 
     return (

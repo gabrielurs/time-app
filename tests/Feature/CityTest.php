@@ -11,8 +11,6 @@ class CityTest extends TestCase
         $response = $this->get('/');
         $response->assertStatus(200);
     }
-    
-
 
     public function test_obtain_user_map_position(): void
     {
@@ -127,10 +125,8 @@ class CityTest extends TestCase
         $this->assertNotEmpty($astro->json());
         $this->assertJson($astro->getContent());        
         $this->assertEquals(200, $astro->getStatusCode());
-    
 
         $weatherTranslated = $this->postJson('api/translate_astro', $astro->json());
-
 
         $this->assertNotEmpty($weatherTranslated->json());
         $this->assertJson($weatherTranslated->getContent());
@@ -153,10 +149,8 @@ class CityTest extends TestCase
         $this->assertNotEmpty($meteo->json());
         $this->assertJson($meteo->getContent());        
         $this->assertEquals(200, $meteo->getStatusCode());
-    
 
         $weatherTranslated = $this->postJson('api/translate_meteo', $meteo->json());
-
 
         $this->assertNotEmpty($weatherTranslated->json());
         $this->assertJson($weatherTranslated->getContent());
@@ -175,12 +169,12 @@ class CityTest extends TestCase
         $this->assertArrayHasKey('lat', $city->json());
         $this->assertArrayHasKey('lng', $city->json());
 
-
         //astro 
         $astro = $this->postJson('api/astro', ['lat' => $city['lat'], 'lng' => $city['lng']]);
         $this->assertNotEmpty($astro->json());
         $this->assertJson($astro->getContent());        
         $this->assertEquals(200, $astro->getStatusCode());
+
         $astroTranslated = $this->postJson('api/translate_astro', $astro->json());
 
         $this->assertNotEmpty($astroTranslated->json());
@@ -198,12 +192,10 @@ class CityTest extends TestCase
         $this->assertJson($meteoTranslated->getContent());
         $this->assertEquals(200, $meteoTranslated->getStatusCode());
 
-
         $mergedTranslations = $this->postJson('api/merge_translations', [
             'astro' => $astroTranslated->json(),
             'meteo' => $meteoTranslated->json()
         ]);
-
 
         $this->assertNotEmpty($mergedTranslations->json());
         $this->assertJson($mergedTranslations->getContent());

@@ -6,7 +6,7 @@ use App\Models\City;
 use DateTime;
 use Exception;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Cache;
 
 
 
@@ -69,6 +69,31 @@ class CityController extends Controller
                 7 => '24.5-32.6m/s (storm)',
                 8 => 'Over 32.6m/s (hurricane)',
             ],
+            'prec_amount' =>[
+                0 => 'None',
+                1 => '0-0.25mm/hr',
+                2 => '0.25-0.5mm/hr',
+                3 => '1-4mm/hr',
+                4 => '4-10mm/hr',
+                5 => '10-16mm/hr',
+                6 => '16-30mm/hr',
+                7 => '30-50mm/hr',
+                8 => '50-75mm/hr',
+                9 => 'Over 75mm/hr',
+            ],
+            'snow_depth'=>[
+                0 => 'None',
+                1 => '0-1cm',
+                2 => '1-5cm',
+                3 => '5-10cm',
+                4 => '10-25cm',
+                5 => '25-50cm',
+                6 => '50-100cm',
+                7 => '100-150cm',
+                8 => '150-250cm',
+                9 => '250+cm',
+
+            ]
 
         ];
 
@@ -213,6 +238,7 @@ class CityController extends Controller
                     'prec_type' => $entry['prec_type'],
                 ];
             }
+
             //This means it takes the weather from 12PM
             if ((int) $timepoint > 35 && (int) $timepoint <= 38) {
                 $day->modify('+1 day');
@@ -232,7 +258,7 @@ class CityController extends Controller
             }
 
             //This also means it takes the weather from 12PM
-            if ((int) $timepoint >= 60 && (int) $timepoint <= 61) {
+            if ((int) $timepoint >= 59 && (int) $timepoint <= 61) {
                 $day->modify('+2 days');
                 $format = $day->format('Y/m/d');
                 $translation[$format] = [
@@ -267,12 +293,33 @@ class CityController extends Controller
 
             // cast becasue timepoint is str
             if ((int) $timepoint <= ($hour + 2) && (int) $timepoint >= ($hour)) {
-                //There is a format because i need the day as a string 
                 $format = $day->format('Y/m/d');
                 $translation[$format][$timepoint] = [
                     'msl_pressure' => $entry['msl_pressure'],
-                    'prec_amount' => $entry['prec_amount'],
+                    'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
                     'snow_depth' => $entry['snow_depth'],
+                ];
+            }
+
+            if ((int) $timepoint > 35 && (int) $timepoint <= 38) {
+                $day->modify('+1 day');
+                $format = $day->format('Y/m/d');
+
+                $translation[$format] = [
+                    'msl_pressure' => $entry['msl_pressure'],
+                    'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
+                    'snow_depth' => $this->translate('snow_depth',$entry['snow_depth']),
+                ];
+            }
+
+            if ((int) $timepoint > 59 && (int) $timepoint <= 61) {
+                $day->modify('+2 day');
+                $format = $day->format('Y/m/d');
+
+                $translation[$format] = [
+                    'msl_pressure' => $entry['msl_pressure'],
+                    'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
+                    'snow_depth' => $this->translate('snow_depth',$entry['snow_depth']),
                 ];
             }
         }
