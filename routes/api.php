@@ -15,6 +15,4 @@ Route::post('/astro', [CityController::class, 'astro']);
 Route::post('/meteo', [CityController::class, 'meteo']);
 Route::post('/translate_astro', [CityController::class, 'translate_astro']);
 Route::post('/translate_meteo', [CityController::class, 'translate_meteo']);
-
-
-Route::post('/unite_translations', [CityController::class, 'unite_translations']);
+Route::post('/merge_translations', [CityController::class, 'merge_translations']);

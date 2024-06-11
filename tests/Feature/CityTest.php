@@ -198,7 +198,17 @@ class CityTest extends TestCase
         $this->assertJson($meteoTranslated->getContent());
         $this->assertEquals(200, $meteoTranslated->getStatusCode());
 
-     
+
+        $mergedTranslations = $this->postJson('api/merge_translations', [
+            'astro' => $astroTranslated->json(),
+            'meteo' => $meteoTranslated->json()
+        ]);
+
+
+        $this->assertNotEmpty($mergedTranslations->json());
+        $this->assertJson($mergedTranslations->getContent());
+        $this->assertEquals(200, $mergedTranslations->getStatusCode());
+        
     }
 
 }

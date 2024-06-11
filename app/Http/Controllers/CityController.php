@@ -279,8 +279,13 @@ class CityController extends Controller
         return response()->json($translation);
     }
 
-    public function unite_translations(Request $request)
+    public function merge_translations(Request $request)
     {
-        return true;
+        $astro = $request->astro;
+        $meteo = $request->meteo;
+        $translation = array_merge_recursive($astro, $meteo);
+        
+
+        return response()->json($translation);
     }
 }
