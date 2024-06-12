@@ -5,7 +5,10 @@ const Home = () => {
     const [city, setCity] = useState("");
     const [country, setCountry] = useState("");
     const [loading, setLoading] = useState("");
-
+    const [weather, setWeather] = useState([]);
+    
+    const [day, setDay] = useState("");
+    const [hour, setHour] = useState("");
 
     const today = new Date();
 
@@ -18,35 +21,51 @@ const Home = () => {
   
     const formattedDate = today.toLocaleDateString('en-US', options);
 
- 
-
 
     useEffect(() => {
         const fetchData = async () => {
             try {
+                const mapResponse = await axios.get(`${import.meta.env.VITE_API_URL}/map`);
+                if(!mapResponse.data) throw new Error('Map is empty');
+                const mapData = await mapResponse.data;
+                setCity(mapData.city);
+                setCountry(mapData.country);
 
-             const mapResponse = await axios.get(`${import.meta.env.VITE_API_URL}/map`);
-             if(!mapResponse.data) throw new Error('Map is empty');
-             const mapData = mapResponse.data;
-             setCity(mapData.city);
-             setCountry(mapData.country);
+                const cityResponse = await axios.post(`${import.meta.env.VITE_API_URL}/city`, { city: mapData.city });
+                if (!cityResponse.data) throw new Error('City data is empty');
+                const cityData = await cityResponse.data;
 
+                const astroResponse = await axios.post(`${import.meta.env.VITE_API_URL}/astro`, {
+                    lat: cityData.lat,
+                    lng: cityData.lng
+                });
 
-              const cityResponse = await axios.post(`${import.meta.env.VITE_API_URL}/city`, { city: mapData.city });
-              if (!cityResponse.data) throw new Error('City data is empty');
-             const cityData = cityResponse.data;
+                if (!astroResponse.data) throw new Error('Astro data is empty');
+                const astroData = await astroResponse.data;
+                
+                const astroTranslationResponse = await axios.post(`${import.meta.env.VITE_API_URL}/translate_astro`, { astro: astroData });
+                if (!astroTranslationResponse.data) throw new Error('Astro data is empty');
+                const astroTranslated = await astroTranslationResponse.data;
 
-              const astroResponse = await axios.post(`${import.meta.env.VITE_API_URL}/astro`, {
-                lat: cityData.lat,
-                lng: cityData.lng
-              });
-              if (!astroResponse.data) throw new Error('Astro data is empty');
-              const astroData = astroResponse.data;
+                const meteoResponse = await axios.post(`${import.meta.env.VITE_API_URL}/meteo`, {
+                    lat: cityData.lat,
+                    lng: cityData.lng
+                });
+                if (!meteoResponse.data) throw new Error('Meteo data is empty');
+                const meteoData = await meteoResponse.data;
 
-              
-               const astroTranslationResponse = await axios.post(`${import.meta.env.VITE_API_URL}/translate_astro`, { astro: astroData });
-               if (!astroTranslationResponse.data) throw new Error('Astro data is empty');
-              
+                const meteoTranslatedResponse = await axios.post(`${import.meta.env.VITE_API_URL}/translate_meteo`, { meteo: meteoData });
+                if (!meteoTranslatedResponse.data) throw new Error('Meteo data is empty');
+                const meteoTranslated = await meteoTranslatedResponse.data;
+
+                const translateWeatherResponse = await axios.post(`${import.meta.env.VITE_API_URL}/merge_translations`, { 
+                    astro: astroTranslated,
+                    meteo: meteoTranslated
+                });
+
+                if(!translateWeatherResponse.data) throw new Error('Weather data is empty');
+                setWeather(translateWeatherResponse.data);
+                console.log(translateWeatherResponse.data);
 
             } catch (err) {
               console.log(err);
@@ -102,7 +121,7 @@ const Home = () => {
                                    {city}, {country}
                                 </div>
                                 <div className="text-3xl font-bold text-gray-800">
-                                    Temperature
+                                    {/* {console.log(weather['2024/06/12'])} */}
                                 </div>
                                 <div className="text-xs text-gray-600">
                                     Data condition

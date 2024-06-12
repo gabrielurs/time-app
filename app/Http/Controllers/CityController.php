@@ -351,12 +351,12 @@ class CityController extends Controller
 
     public function merge_translations(Request $request)
     {
+        
         $astro = $request->astro;
         $meteo = $request->meteo;
-        
-        $translation = array_merge_recursive($astro, $meteo);
-        
 
+
+        $translation = array_merge_recursive($astro, $meteo);
         return response()->json($translation);
     }
     
