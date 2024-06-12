@@ -75,6 +75,7 @@ const Home = () => {
           };
       
           fetchData();
+          
     }, []);
 
     return (

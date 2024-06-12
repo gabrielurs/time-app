@@ -236,68 +236,71 @@ class CityController extends Controller
     public function translate_astro(Request $request)
     {
         $data = $request->input('astro');
-        $translation = array();
-
-        $hour = date('H');
-
-        //This for recieves the array then reorgranizes it and translate it if needed
-        foreach ($data['dataseries']['data'] as $entry) {
-            $timepoint = $entry['@attributes']['timepoint'];
-            $day = new DateTime();
-
-            // cast becasue timepoint is str
-            if ((int) $timepoint <= ($hour + 2) && (int) $timepoint >= ($hour)) {
-                //There is a format because i need the day as a string 
-                $format = $day->format('Y/m/d');
-                $translation[$format][$timepoint] = [
-                    'cloudcover' => $this->translate('cloudcover', $entry['cloudcover']),
-                    'seeing' => $this->translate('seeing', $entry['seeing']),
-                    'transparency' => $this->translate('transparency', $entry['transparency']),
-                    'lifted_index' => $this->translate('lifted_index', $entry['lifted_index']),
-                    'rh2m' => $entry['rh2m'],
-                    'wind10m_direction' => $entry['wind10m_direction'],
-                    'wind10m_speed' => $this->translate('wind10m_speed', $entry['wind10m_speed']),
-                    'temp2m' => $entry['temp2m'],
-                    'prec_type' => $entry['prec_type'],
-                ];
+    
+        $cacheKey = 'astro_translation_' . md5(json_encode($data));
+    
+        $translation = Cache::get($cacheKey);
+    
+        if (!$translation) {
+            $translation = array();
+            $hour = date('H');
+    
+            foreach ($data['dataseries']['data'] as $entry) {
+                $timepoint = $entry['@attributes']['timepoint'];
+                $day = new DateTime();
+    
+                if ((int) $timepoint <= ($hour + 2) && (int) $timepoint >= ($hour)) {
+                    $format = $day->format('Y/m/d');
+                    $translation[$format][$timepoint] = [
+                        'cloudcover' => $this->translate('cloudcover', $entry['cloudcover']),
+                        'seeing' => $this->translate('seeing', $entry['seeing']),
+                        'transparency' => $this->translate('transparency', $entry['transparency']),
+                        'lifted_index' => $this->translate('lifted_index', $entry['lifted_index']),
+                        'rh2m' => $entry['rh2m'],
+                        'wind10m_direction' => $entry['wind10m_direction'],
+                        'wind10m_speed' => $this->translate('wind10m_speed', $entry['wind10m_speed']),
+                        'temp2m' => $entry['temp2m'],
+                        'prec_type' => $entry['prec_type'],
+                    ];
+                }
+    
+                if ((int) $timepoint > 35 && (int) $timepoint <= 38) {
+                    $day->modify('+1 day');
+                    $format = $day->format('Y/m/d');
+    
+                    $translation[$format] = [
+                        'cloudcover' => $this->translate('cloudcover', $entry['cloudcover']),
+                        'seeing' => $this->translate('seeing', $entry['seeing']),
+                        'transparency' => $this->translate('transparency', $entry['transparency']),
+                        'lifted_index' => $this->translate('lifted_index', $entry['lifted_index']),
+                        'rh2m' => $entry['rh2m'],
+                        'wind10m_direction' => $entry['wind10m_direction'],
+                        'wind10m_speed' => $this->translate('wind10m_speed', $entry['wind10m_speed']),
+                        'temp2m' => $entry['temp2m'],
+                        'prec_type' => $entry['prec_type'],
+                    ];
+                }
+    
+                if ((int) $timepoint >= 59 && (int) $timepoint <= 61) {
+                    $day->modify('+2 days');
+                    $format = $day->format('Y/m/d');
+                    $translation[$format] = [
+                        'cloudcover' => $this->translate('cloudcover', $entry['cloudcover']),
+                        'seeing' => $this->translate('seeing', $entry['seeing']),
+                        'transparency' => $this->translate('transparency', $entry['transparency']),
+                        'lifted_index' => $this->translate('lifted_index', $entry['lifted_index']),
+                        'rh2m' => $entry['rh2m'],
+                        'wind10m_direction' => $entry['wind10m_direction'],
+                        'wind10m_speed' => $this->translate('wind10m_speed', $entry['wind10m_speed']),
+                        'temp2m' => $entry['temp2m'],
+                        'prec_type' => $entry['prec_type'],
+                    ];
+                }
             }
-
-            //This means it takes the weather from 12PM
-            if ((int) $timepoint > 35 && (int) $timepoint <= 38) {
-                $day->modify('+1 day');
-                $format = $day->format('Y/m/d');
-
-                $translation[$format] = [
-                    'cloudcover' => $this->translate('cloudcover', $entry['cloudcover']),
-                    'seeing' => $this->translate('seeing', $entry['seeing']),
-                    'transparency' => $this->translate('transparency', $entry['transparency']),
-                    'lifted_index' => $this->translate('lifted_index', $entry['lifted_index']),
-                    'rh2m' => $entry['rh2m'],
-                    'wind10m_direction' => $entry['wind10m_direction'],
-                    'wind10m_speed' => $this->translate('wind10m_speed', $entry['wind10m_speed']),
-                    'temp2m' => $entry['temp2m'],
-                    'prec_type' => $entry['prec_type'],
-                ];
-            }
-
-            //This also means it takes the weather from 12PM
-            if ((int) $timepoint >= 59 && (int) $timepoint <= 61) {
-                $day->modify('+2 days');
-                $format = $day->format('Y/m/d');
-                $translation[$format] = [
-                    'cloudcover' => $this->translate('cloudcover', $entry['cloudcover']),
-                    'seeing' => $this->translate('seeing', $entry['seeing']),
-                    'transparency' => $this->translate('transparency', $entry['transparency']),
-                    'lifted_index' => $this->translate('lifted_index', $entry['lifted_index']),
-                    'rh2m' => $entry['rh2m'],
-                    'wind10m_direction' => $entry['wind10m_direction'],
-                    'wind10m_speed' => $this->translate('wind10m_speed', $entry['wind10m_speed']),
-                    'temp2m' => $entry['temp2m'],
-                    'prec_type' => $entry['prec_type'],
-                ];
-            }
+    
+            Cache::put($cacheKey, $translation, 60 * 1);
         }
-
+    
         return response()->json($translation);
     }
 
@@ -305,58 +308,69 @@ class CityController extends Controller
     public function translate_meteo(Request $request)
     {
         $data = $request->input('meteo');
-        $day = $data;
-        $translation = array();
-        $hour = date('H');
+        
+        $cacheKey = 'meteo_translation_' . md5(json_encode($data));
 
-        //This for recieves the array then reorgranizes it and translate it if needed
-        foreach ($data['dataseries']['data'] as $entry) {
-            $timepoint = $entry['@attributes']['timepoint'];
-            $day = new DateTime();
-
-            // cast becasue timepoint is str
-            if ((int) $timepoint <= ($hour + 2) && (int) $timepoint >= ($hour)) {
-                $format = $day->format('Y/m/d');
-                $translation[$format][$timepoint] = [
-                    'msl_pressure' => $entry['msl_pressure'],
-                    'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
-                    'snow_depth' => $entry['snow_depth'],
-                ];
+        $translation = Cache::get($cacheKey);
+        if(!$translation){
+            $hour = date('H');
+            foreach ($data['dataseries']['data'] as $entry) {
+                $timepoint = $entry['@attributes']['timepoint'];
+                $day = new DateTime();
+    
+                // cast becasue timepoint is str
+                if ((int) $timepoint <= ($hour + 2) && (int) $timepoint >= ($hour)) {
+                    $format = $day->format('Y/m/d');
+                    $translation[$format][$timepoint] = [
+                        'msl_pressure' => $entry['msl_pressure'],
+                        'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
+                        'snow_depth' => $entry['snow_depth'],
+                    ];
+                }
+    
+                if ((int) $timepoint > 35 && (int) $timepoint <= 38) {
+                    $day->modify('+1 day');
+                    $format = $day->format('Y/m/d');
+    
+                    $translation[$format] = [
+                        'msl_pressure' => $entry['msl_pressure'],
+                        'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
+                        'snow_depth' => $this->translate('snow_depth',$entry['snow_depth']),
+                    ];
+                }
+    
+                if ((int) $timepoint > 59 && (int) $timepoint <= 61) {
+                    $day->modify('+2 day');
+                    $format = $day->format('Y/m/d');
+    
+                    $translation[$format] = [
+                        'msl_pressure' => $entry['msl_pressure'],
+                        'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
+                        'snow_depth' => $this->translate('snow_depth',$entry['snow_depth']),
+                    ];
+                }
             }
 
-            if ((int) $timepoint > 35 && (int) $timepoint <= 38) {
-                $day->modify('+1 day');
-                $format = $day->format('Y/m/d');
-
-                $translation[$format] = [
-                    'msl_pressure' => $entry['msl_pressure'],
-                    'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
-                    'snow_depth' => $this->translate('snow_depth',$entry['snow_depth']),
-                ];
-            }
-
-            if ((int) $timepoint > 59 && (int) $timepoint <= 61) {
-                $day->modify('+2 day');
-                $format = $day->format('Y/m/d');
-
-                $translation[$format] = [
-                    'msl_pressure' => $entry['msl_pressure'],
-                    'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
-                    'snow_depth' => $this->translate('snow_depth',$entry['snow_depth']),
-                ];
-            }
+            Cache::put($cacheKey, $translation, 60 * 1);
         }
+
+   
         return response()->json($translation);
     }
 
     public function merge_translations(Request $request)
     {
-        
+
         $astro = $request->astro;
         $meteo = $request->meteo;
 
+        $cacheKey = 'merge_translation_' . md5(json_encode($astro) . json_encode($meteo));
+        $translation = Cache::get($cacheKey);
+        if(!$translation){
+            $translation = array_merge_recursive($astro, $meteo);
+            Cache::put($cacheKey, $translation, 60 * 1);
+        }
 
-        $translation = array_merge_recursive($astro, $meteo);
         return response()->json($translation);
     }
     
