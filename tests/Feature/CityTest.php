@@ -64,6 +64,8 @@ class CityTest extends TestCase
 
         $astro = $this->postJson('api/astro', ['lat' => $city['lat'], 'lng' => $city['lng']]);
 
+
+
         $this->assertNotEmpty($astro->json());
         $this->assertJson($astro->getContent());
 
@@ -128,6 +130,7 @@ class CityTest extends TestCase
 
         $weatherTranslated = $this->postJson('api/translate_astro', ['astro' => $astro->json()]);
 
+
         $this->assertNotEmpty($weatherTranslated->json());
         $this->assertJson($weatherTranslated->getContent());
         $this->assertEquals(200, $weatherTranslated->getStatusCode());
@@ -169,7 +172,7 @@ class CityTest extends TestCase
         $this->assertArrayHasKey('lat', $city->json());
         $this->assertArrayHasKey('lng', $city->json());
 
-        //astro 
+        //Astro 
         $astro = $this->postJson('api/astro', ['lat' => $city['lat'], 'lng' => $city['lng']]);
         $this->assertNotEmpty($astro->json());
         $this->assertJson($astro->getContent());        

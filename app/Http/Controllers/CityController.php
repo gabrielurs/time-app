@@ -153,25 +153,39 @@ class CityController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        try {
-            $url = 'https://www.7timer.info/bin/meteo.php?lon=' . $request->lng . '&lat=' . $request->lat . '&ac=0&unit=metric&output=xml&tzshift=0';
-            $data = array();
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-            $response = curl_exec($ch);
-            curl_close($ch);
+        $lng = $request->lng;
+        $lat = $request->lat;
 
-            $xml = simplexml_load_string($response);
-            $json = json_encode($xml);
-            $meteo = json_decode($json, TRUE);
+        $cacheKey = "meteo_{$lng}_{$lat}";
 
-            return response()->json($meteo);
-        } catch (Exception $e) {
-            return response(['message' => 'City not found'], 404);
+        $meteo = Cache::get($cacheKey);
+
+
+        if(!$meteo){
+            try {
+                $url = 'https://www.7timer.info/bin/meteo.php?lon=' . $request->lng . '&lat=' . $request->lat . '&ac=0&unit=metric&output=xml&tzshift=0';
+                $data = array();
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+                $response = curl_exec($ch);
+                curl_close($ch);
+    
+                $xml = simplexml_load_string($response);
+                $json = json_encode($xml);
+                $meteo = json_decode($json, TRUE);
+                
+                Cache::put($cacheKey, $meteo, 60 * 1);
+
+            } catch (Exception $e) {
+                return response(['message' => 'City not found'], 404);
+            }
         }
+        
+        return response()->json($meteo);
+  
     }
 
 
@@ -186,33 +200,42 @@ class CityController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        try {
-            $url = 'https://www.7timer.info/bin/astro.php?lon=' . $request->lng . '&lat=' . $request->lat . '&ac=0&unit=metric&output=xml&tzshift=0';
-            $data2 = array();
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data2));
-            $response = curl_exec($ch);
-            curl_close($ch);
-
-            $xml = simplexml_load_string($response);
-            $json = json_encode($xml);
-            $astro = json_decode($json, TRUE);
-
-            return response()->json($astro);
-
-        } catch (Exception $e) {
-            return response(['message' => 'City not found'], 404);
+        $lng = $request->lng;
+        $lat = $request->lat;
+        $cacheKey = "astro_{$lng}_{$lat}";
+        $astro = Cache::get($cacheKey);
+        
+        if(!$astro){
+            try {
+                $url = 'https://www.7timer.info/bin/astro.php?lon=' . $request->lng . '&lat=' . $request->lat . '&ac=0&unit=metric&output=xml&tzshift=0';
+                $data2 = array();
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data2));
+                $response = curl_exec($ch);
+                curl_close($ch);
+    
+                $xml = simplexml_load_string($response);
+                $json = json_encode($xml);
+                $astro = json_decode($json, TRUE);
+                
+                //1h
+                Cache::put($cacheKey, $astro, 60 * 1);
+    
+            } catch (Exception $e) {
+                return response(['message' => 'City not found'], 404);
+            }
         }
+        return response()->json($astro);
+   
     }
 
     // Gets the weather data and translate its data, it has a dictionary that allows for translation
     public function translate_astro(Request $request)
     {
         $data = $request->input('astro');
-        $day = $data;
         $translation = array();
 
         $hour = date('H');
@@ -330,6 +353,7 @@ class CityController extends Controller
     {
         $astro = $request->astro;
         $meteo = $request->meteo;
+        
         $translation = array_merge_recursive($astro, $meteo);
         
 
