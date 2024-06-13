@@ -69,7 +69,7 @@ class CityController extends Controller
                 7 => '24.5-32.6m/s (storm)',
                 8 => 'Over 32.6m/s (hurricane)',
             ],
-            'prec_amount' =>[
+            'prec_amount' => [
                 0 => 'None',
                 1 => '0-0.25mm/hr',
                 2 => '0.25-0.5mm/hr',
@@ -81,7 +81,7 @@ class CityController extends Controller
                 8 => '50-75mm/hr',
                 9 => 'Over 75mm/hr',
             ],
-            'snow_depth'=>[
+            'snow_depth' => [
                 0 => 'None',
                 1 => '0-1cm',
                 2 => '1-5cm',
@@ -99,6 +99,10 @@ class CityController extends Controller
 
         return isset($translations[$property][$value]) ? $translations[$property][$value] : "Unknown value";
     }
+
+
+
+
     //Gets the user's location and returns the city
     public function map()
     {
@@ -161,7 +165,7 @@ class CityController extends Controller
         $meteo = Cache::get($cacheKey);
 
 
-        if(!$meteo){
+        if (!$meteo) {
             try {
                 $url = 'https://www.7timer.info/bin/meteo.php?lon=' . $request->lng . '&lat=' . $request->lat . '&ac=0&unit=metric&output=xml&tzshift=0';
                 $data = array();
@@ -172,20 +176,18 @@ class CityController extends Controller
                 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
                 $response = curl_exec($ch);
                 curl_close($ch);
-    
+
                 $xml = simplexml_load_string($response);
                 $json = json_encode($xml);
                 $meteo = json_decode($json, TRUE);
-                
-                Cache::put($cacheKey, $meteo, 60 * 1);
 
+                Cache::put($cacheKey, $meteo, 60 * 1);
             } catch (Exception $e) {
                 return response(['message' => 'City not found'], 404);
             }
         }
-        
+
         return response()->json($meteo);
-  
     }
 
 
@@ -204,8 +206,8 @@ class CityController extends Controller
         $lat = $request->lat;
         $cacheKey = "astro_{$lng}_{$lat}";
         $astro = Cache::get($cacheKey);
-        
-        if(!$astro){
+
+        if (!$astro) {
             try {
                 $url = 'https://www.7timer.info/bin/astro.php?lon=' . $request->lng . '&lat=' . $request->lat . '&ac=0&unit=metric&output=xml&tzshift=0';
                 $data2 = array();
@@ -216,39 +218,37 @@ class CityController extends Controller
                 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data2));
                 $response = curl_exec($ch);
                 curl_close($ch);
-    
+
                 $xml = simplexml_load_string($response);
                 $json = json_encode($xml);
                 $astro = json_decode($json, TRUE);
-                
+
                 //1h
                 Cache::put($cacheKey, $astro, 60 * 1);
-    
             } catch (Exception $e) {
                 return response(['message' => 'City not found'], 404);
             }
         }
         return response()->json($astro);
-   
     }
 
     // Gets the weather data and translate its data, it has a dictionary that allows for translation
     public function translate_astro(Request $request)
     {
         $data = $request->input('astro');
-    
+
         $cacheKey = 'astro_translation_' . md5(json_encode($data));
-    
+
         $translation = Cache::get($cacheKey);
-    
+
         if (!$translation) {
             $translation = array();
             $hour = date('H');
-    
+
             foreach ($data['dataseries']['data'] as $entry) {
                 $timepoint = $entry['@attributes']['timepoint'];
                 $day = new DateTime();
-    
+
                 if ((int) $timepoint <= ($hour + 2) && (int) $timepoint >= ($hour)) {
                     $format = $day->format('Y/m/d');
                     $translation[$format][$timepoint] = [
@@ -263,11 +263,11 @@ class CityController extends Controller
                         'prec_type' => $entry['prec_type'],
                     ];
                 }
-    
+
                 if ((int) $timepoint > 35 && (int) $timepoint <= 38) {
                     $day->modify('+1 day');
                     $format = $day->format('Y/m/d');
-    
+
                     $translation[$format] = [
                         'cloudcover' => $this->translate('cloudcover', $entry['cloudcover']),
                         'seeing' => $this->translate('seeing', $entry['seeing']),
@@ -280,7 +280,7 @@ class CityController extends Controller
                         'prec_type' => $entry['prec_type'],
                     ];
                 }
-    
+
                 if ((int) $timepoint >= 59 && (int) $timepoint <= 61) {
                     $day->modify('+2 days');
                     $format = $day->format('Y/m/d');
@@ -297,10 +297,10 @@ class CityController extends Controller
                     ];
                 }
             }
-    
+
             Cache::put($cacheKey, $translation, 60 * 1);
         }
-    
+
         return response()->json($translation);
     }
 
@@ -308,45 +308,45 @@ class CityController extends Controller
     public function translate_meteo(Request $request)
     {
         $data = $request->input('meteo');
-        
+
         $cacheKey = 'meteo_translation_' . md5(json_encode($data));
 
         $translation = Cache::get($cacheKey);
-        if(!$translation){
+        if (!$translation) {
             $hour = date('H');
             foreach ($data['dataseries']['data'] as $entry) {
                 $timepoint = $entry['@attributes']['timepoint'];
                 $day = new DateTime();
-    
+
                 // cast becasue timepoint is str
                 if ((int) $timepoint <= ($hour + 2) && (int) $timepoint >= ($hour)) {
                     $format = $day->format('Y/m/d');
                     $translation[$format][$timepoint] = [
                         'msl_pressure' => $entry['msl_pressure'],
-                        'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
+                        'prec_amount' => $entry['prec_amount'],
                         'snow_depth' => $entry['snow_depth'],
                     ];
                 }
-    
+
                 if ((int) $timepoint > 35 && (int) $timepoint <= 38) {
                     $day->modify('+1 day');
                     $format = $day->format('Y/m/d');
-    
+
                     $translation[$format] = [
                         'msl_pressure' => $entry['msl_pressure'],
-                        'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
-                        'snow_depth' => $this->translate('snow_depth',$entry['snow_depth']),
+                        'prec_amount' => $entry['prec_amount'],
+                        'snow_depth' => $entry['snow_depth'],
                     ];
                 }
-    
+
                 if ((int) $timepoint > 59 && (int) $timepoint <= 61) {
                     $day->modify('+2 day');
                     $format = $day->format('Y/m/d');
-    
+
                     $translation[$format] = [
                         'msl_pressure' => $entry['msl_pressure'],
-                        'prec_amount' => $this->translate('prec_amount',$entry['prec_amount']),
-                        'snow_depth' => $this->translate('snow_depth',$entry['snow_depth']),
+                        'prec_amount' =>  $entry['prec_amount'],
+                        'snow_depth' => $entry['snow_depth'],
                     ];
                 }
             }
@@ -354,24 +354,22 @@ class CityController extends Controller
             Cache::put($cacheKey, $translation, 60 * 1);
         }
 
-   
+
         return response()->json($translation);
     }
 
     public function merge_translations(Request $request)
     {
-
         $astro = $request->astro;
         $meteo = $request->meteo;
 
         $cacheKey = 'merge_translation_' . md5(json_encode($astro) . json_encode($meteo));
         $translation = Cache::get($cacheKey);
-        if(!$translation){
+        if (!$translation) {
             $translation = array_merge_recursive($astro, $meteo);
             Cache::put($cacheKey, $translation, 60 * 1);
         }
 
         return response()->json($translation);
     }
-    
 }
