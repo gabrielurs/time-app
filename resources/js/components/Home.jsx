@@ -99,80 +99,81 @@ const Home = () => {
         setGeneralWeather(generalWeatherTmp);
     };
 
+    const fetchData = async () => {
+        try {
+            const mapResponse = await axios.get(
+                `${import.meta.env.VITE_API_URL}/map`
+            );
+            if (!mapResponse.data) throw new Error("Map is empty");
+            const mapData = await mapResponse.data;
+            setCity(mapData.city);
+            setCountry(mapData.country);
+
+            const cityResponse = await axios.post(
+                `${import.meta.env.VITE_API_URL}/city`,
+                { city: mapData.city }
+            );
+            if (!cityResponse.data) throw new Error("City data is empty");
+            const cityData = await cityResponse.data;
+
+            const astroResponse = await axios.post(
+                `${import.meta.env.VITE_API_URL}/astro`,
+                {
+                    lat: cityData.lat,
+                    lng: cityData.lng,
+                }
+            );
+
+            if (!astroResponse.data) throw new Error("Astro data is empty");
+            const astroData = await astroResponse.data;
+
+            const astroTranslationResponse = await axios.post(
+                `${import.meta.env.VITE_API_URL}/translate_astro`,
+                { astro: astroData }
+            );
+            if (!astroTranslationResponse.data)
+                throw new Error("Astro data is empty");
+            const astroTranslated = await astroTranslationResponse.data;
+
+            const meteoResponse = await axios.post(
+                `${import.meta.env.VITE_API_URL}/meteo`,
+                {
+                    lat: cityData.lat,
+                    lng: cityData.lng,
+                }
+            );
+            if (!meteoResponse.data) throw new Error("Meteo data is empty");
+            const meteoData = await meteoResponse.data;
+
+            const meteoTranslatedResponse = await axios.post(
+                `${import.meta.env.VITE_API_URL}/translate_meteo`,
+                { meteo: meteoData }
+            );
+            if (!meteoTranslatedResponse.data)
+                throw new Error("Meteo data is empty");
+            const meteoTranslated = await meteoTranslatedResponse.data;
+
+            const translateWeatherResponse = await axios.post(
+                `${import.meta.env.VITE_API_URL}/merge_translations`,
+                {
+                    astro: astroTranslated,
+                    meteo: meteoTranslated,
+                }
+            );
+
+            if (!translateWeatherResponse.data)
+                throw new Error("Weather data is empty");
+            setWeather(translateWeatherResponse.data);
+            determineWeather(translateWeatherResponse.data);
+        } catch (err) {
+            console.log(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const mapResponse = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/map`
-                );
-                if (!mapResponse.data) throw new Error("Map is empty");
-                const mapData = await mapResponse.data;
-                setCity(mapData.city);
-                setCountry(mapData.country);
-
-                const cityResponse = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/city`,
-                    { city: mapData.city }
-                );
-                if (!cityResponse.data) throw new Error("City data is empty");
-                const cityData = await cityResponse.data;
-
-                const astroResponse = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/astro`,
-                    {
-                        lat: cityData.lat,
-                        lng: cityData.lng,
-                    }
-                );
-
-                if (!astroResponse.data) throw new Error("Astro data is empty");
-                const astroData = await astroResponse.data;
-
-                const astroTranslationResponse = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/translate_astro`,
-                    { astro: astroData }
-                );
-                if (!astroTranslationResponse.data)
-                    throw new Error("Astro data is empty");
-                const astroTranslated = await astroTranslationResponse.data;
-
-                const meteoResponse = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/meteo`,
-                    {
-                        lat: cityData.lat,
-                        lng: cityData.lng,
-                    }
-                );
-                if (!meteoResponse.data) throw new Error("Meteo data is empty");
-                const meteoData = await meteoResponse.data;
-
-                const meteoTranslatedResponse = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/translate_meteo`,
-                    { meteo: meteoData }
-                );
-                if (!meteoTranslatedResponse.data)
-                    throw new Error("Meteo data is empty");
-                const meteoTranslated = await meteoTranslatedResponse.data;
-
-                const translateWeatherResponse = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/merge_translations`,
-                    {
-                        astro: astroTranslated,
-                        meteo: meteoTranslated,
-                    }
-                );
-
-                if (!translateWeatherResponse.data)
-                    throw new Error("Weather data is empty");
-                setWeather(translateWeatherResponse.data);
-                determineWeather(translateWeatherResponse.data);
-            } catch (err) {
-                console.log(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchData();
     }, []);
 
@@ -234,12 +235,12 @@ const Home = () => {
                             <div className="flex-1 text-center pt-4 border-r px-5 dark:border-gray-500">
                                 <div className="">{days[1]}</div>
                                 <div className="">icon</div>
-                                <div className="font-semibold"> {weather[days[0]]?.[hour]['temp2m'] + "°C"}</div>
+                                <div className="font-semibold"> </div>
                             </div>
                             <div className="flex-1 text-center pt-4 px-5">
                                 <div className="">{days[2]}</div>
                                 <div className="">icon</div>
-                                <div className="font-semibold"> {weather[days[0]]?.[hour]['temp2m'] + "°C"}</div>
+                                <div className="font-semibold"> </div>
                             </div>
                         </div>
                     </div>
