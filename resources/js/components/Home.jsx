@@ -20,83 +20,113 @@ const Home = () => {
     };
 
     const formattedDate = today.toLocaleDateString("en-US", options);
+    
+    function conditionalWeather(weather, daysTmp, hoursTmp) {
+        let data = [];
+        if(hoursTmp == null){
+             data = weather[daysTmp];
+        }else{
+             data = weather[daysTmp][hoursTmp];
+        }
+
+
+        let cloudCover = data['cloudcover'];
+        let precipitationRate = data['prec_amount'];
+        let precipitationType = data['prec_type'];
+        let relativeHumidity = data['rh2m'];
+        let liftedIndex = data['lifted_index'];
+        var generalWeather = '';
+    
+        cloudCover = parseInt(cloudCover.split('%')[0].trim()); 
+        precipitationRate = parseInt(precipitationRate);
+        relativeHumidity = parseInt(relativeHumidity);
+        liftedIndex = parseInt(liftedIndex.split(' ')[0].trim()); 
+    
+        // Total cloud cover less than 20% = Clear
+        if (cloudCover <= 20) {
+            generalWeather = "Clear";
+        }
+    
+        // Total cloud cover between 20%-60% = Cloudy
+        if (cloudCover > 20 && cloudCover <= 60) {
+            generalWeather = "Cloudy";
+        }
+
+        //cloud cover over 80% 
+        if(cloudCover >= 80){
+            generalWeather = "Very Cloudy";
+        }
+    
+        // Relative humidity over 90% with total cloud cover less than 60% = Foggy
+        if (relativeHumidity > 90 && cloudCover <= 60) {
+            generalWeather = "Foggy";
+        }
+    
+        // Precipitation rate less than 4mm/hr with cloud cover more than 80% = Light rain or showers
+        if (precipitationRate < 4 && cloudCover > 80 && precipitationType == 'rain') {
+            generalWeather = "Light rain or showers";
+        }
+    
+        // Precipitation rate less than 4mm/hr with cloud cover between 60%-80% = Occasional Showers
+        if (precipitationRate < 4 && cloudCover > 60 && cloudCover <= 80 && precipitationType == 'rain') {
+            generalWeather = "Occasional Showers";
+        }
+    
+        // Precipitation rate less than 4mm/hr less than 60% = Isolated Showers
+        if (precipitationRate < 4 && cloudCover <= 60 && precipitationType == 'rain') {
+            generalWeather = "Isolated Showers";
+        }
+    
+        // Precipitation rate over 4mm/hr = Rain
+        if (precipitationRate >= 4 && precipitationType == 'rain') {
+            generalWeather = "Rain";
+        }
+    
+        // Precipitation rate over 4mm/hr = Snow
+        if (precipitationRate >= 4 && precipitationType == 'snow') {
+            generalWeather = "Snow";
+        }
+    
+        // Precipitation type to be ice pellets or freezing rain = Mixed
+        if (precipitationType == 'icep' || precipitationType == 'frzr') {
+            generalWeather = "Mixed";
+        }
+    
+        // Lifted Index less than -5 with precipitation rate below 4mm/hr = Thunderstorm possible
+        if (liftedIndex < -5 && precipitationRate < 4) {
+            generalWeather = "Thunderstorm possible";
+        }
+    
+        // Lifted Index less than -5 with precipitation rate over 4mm/hr = Thunderstorm
+        if (liftedIndex < -5 && precipitationRate >= 4) {
+            generalWeather = "Thunderstorm";
+        }
+    
+        // Lifted index less than -5 with precipitation type rain = Thunderstorm with rain
+        if (liftedIndex < -5 && precipitationType == 'rain') {
+            generalWeather = "Thunderstorm with rain";
+        }
+    
+        return generalWeather;
+    }
+    
 
     const determineWeather = (weather) => {
         var daysTmp = Object.keys(weather);
         let hoursTmp = Object.keys(weather[daysTmp[0]]);
         let generalWeatherTmp = [];
-        
+        let weatherTmp = [];
 
-        for (let i in weather) {
-            if (daysTmp[0] == i) {
-                let data = weather[daysTmp[0]][hoursTmp[0]];
-                let cloudCover = data['cloudcover'];
-                let precipitationRate = data['prec_amount'];
-                let precipitationTye = data['prec_type'];
-                let relativeHumidity = data['rh2m'];
-                let liftedIndex = data['lifted_index'];
+        generalWeatherTmp[0] = conditionalWeather(weather, daysTmp[0], hoursTmp);
+        generalWeatherTmp[1] = conditionalWeather(weather, daysTmp[1], null)
+        generalWeatherTmp[2] = conditionalWeather(weather, daysTmp[2], null);
 
-                //Total cloud cover less than 20% = Clear
-                if(parseInt(cloudCover.substring(0, cloudCover.lenght)) <= 20){
-                    generalWeatherTmp[0] = "Clear";
-                }
-                //Total cloud cover between 20%-60% = Cloudy
-                if(parseInt(cloudCover.substring(0, cloudCover.lenght)) >= 20 && parseInt(cloudCover.substring(3, cloudCover.lenght)) >= 60){
-                    generalWeatherTmp[0] = "Cloudy";
-                }
-                //Relative humidity over 90% with total cloud cover less than 60% = Foggy
-                if(parseInt(relativeHumidity) >= 13 && parseInt(cloudCover.substring(0, cloudCover.lenght)) <= 60){
-                    generalWeatherTmp[0] = "Foggy";
-                }
-                //Precipitation rate less than 4mm/hr with cloud cover more than 80% = Light rain or showers
-                if(precipitationRate >= 3 && parseInt(cloudCover.substring(0, cloudCover.lenght)) >= 80 && precipitationTye == 'rain'){
-                    generalWeatherTmp[0] = "Light rain or showers";
-                }
-                //Precipitation rate less than 4mm/hr with cloud cover between 60%-80% = Occasional Showers
-                if(precipitationRate >= 3 && parseInt(cloudCover.substring(0, cloudCover.lenght)) >= 60 && parseInt(cloudCover.substring(0, cloudCover.lenght)) <= 80 && precipitationTye == 'rain'){
-                    generalWeatherTmp[0] = "Occasional Showers";
-                }
-           
-                //Precipitation rate less than 4mm/hr less than 60% = Isolated Showers
-                if(precipitationRate >= 3 && parseInt(cloudCover.substring(0, cloudCover.lenght)) <= 60 && precipitationTye == 'rain'){
-                    generalWeatherTmp[0] = "Isolated Showers";
-                }
-
-                //Precipitation rate over 4mm/hr = Rain
-                if(precipitationRate >= 3 && precipitationTye == 'rain'){
-                    generalWeatherTmp[0] = "Rain";
-                }
-             
-                //Precipitation rate over 4mm/hr = Snow
-                if(precipitationRate >= 3 && precipitationTye == 'snow'){
-                    generalWeatherTmp[0] = "Snow";
-                }
-
-                //Precipitation type to be ice pellets or freezing rain = Mixed
-                if(precipitationTye == 'icep' || precipitationTye == 'frzr'){
-                    generalWeatherTmp[0] = "Mixed";
-                }
-             
-                //Lifted Index less than -5 with precipitation rate below 4mm/hr = Thunderstorm possible
-                if(parseInt(liftedIndex.substring(3, liftedIndex.lenght)) <= -5 && precipitationRate <= 3){
-                    generalWeatherTmp[0] = "Thunderstorm possible";
-                }
-
-                //Lifted Index less than -5 with precipitation rate over 4mm/hr = Thunderstorm
-                if(parseInt(liftedIndex.substring(3, liftedIndex.lenght)) <= -5 && precipitationRate >= 3){
-                    generalWeatherTmp[0] = "Thunderstorm";
-                }
-                //Lifted index less than -5 with precipitation type rain Thunderstorm with rain
-                if(parseInt(liftedIndex.substring(3, liftedIndex.lenght)) <= -5 && precipitationTye == 'rain'){
-                    generalWeatherTmp[0] = "Thunderstorm with rain";
-                }
-                
-            }
-        }
 
         setDays(daysTmp);
         setHour(hoursTmp[0]);
         setGeneralWeather(generalWeatherTmp);
+        setWeather(weather);
+
     };
 
     const fetchData = async () => {
@@ -163,8 +193,8 @@ const Home = () => {
 
             if (!translateWeatherResponse.data)
                 throw new Error("Weather data is empty");
-            setWeather(translateWeatherResponse.data);
             determineWeather(translateWeatherResponse.data);
+            console.log(translateWeatherResponse.data);
         } catch (err) {
             console.log(err);
         } finally {
@@ -221,10 +251,10 @@ const Home = () => {
                                     {city}, {country}
                                 </div>
                                 <div className="text-3xl font-bold text-gray-800">
-                                    {weather[days[0]]?.[hour]['temp2m'] + "°C"}
+                                    {weather[days[0]]?.[hour]['temp2m'] + '°C'}
                                 </div>
                                 <div className="text-xs text-gray-600 font-semibold">
-                                    {generalWeather}
+                                    {generalWeather[0]}
                                 </div>
                             </div>
                             <div className="w-24">
@@ -235,12 +265,13 @@ const Home = () => {
                             <div className="flex-1 text-center pt-4 border-r px-5 dark:border-gray-500">
                                 <div className="">{days[1]}</div>
                                 <div className="">icon</div>
-                                <div className="font-semibold"> </div>
+                                <div className="font-semibold"> {weather[days[1]]?.['temp2m'] + '°C'}</div>
                             </div>
                             <div className="flex-1 text-center pt-4 px-5">
                                 <div className="">{days[2]}</div>
                                 <div className="">icon</div>
-                                <div className="font-semibold"> </div>
+                                <div className="font-semibold"> {weather[days[1]]?.['temp2m'] + '°C'}</div>
+
                             </div>
                         </div>
                     </div>
@@ -248,41 +279,41 @@ const Home = () => {
                 {/* First Row */}
                 <div className="flex flex-row">
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 mr-2 text-center">
-                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <h1 className="font-bold text-gray-800">Cloud Cover</h1>
                         <p>icon</p>
-                        <h2>data</h2>
+                        <h2 className="font-bold">{weather[days[0]]?.[hour]['cloudcover']}</h2>
                     </div>
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 text-center">
-                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <h1 className="font-bold text-gray-800">Atm Seeing</h1>
                         <p>icon</p>
-                        <h2>data</h2>
+                        <h2 className="font-bold">{weather[days[0]]?.[hour]['seeing']}</h2>
                     </div>
                 </div>
                 {/* Second Row */}
                 <div className="flex flex-row">
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 mr-2 text-center">
-                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <h1 className="font-bold text-gray-800">Transparency</h1>
                         <p>icon</p>
-                        <h2>data</h2>
+                        <h2 className="font-bold">{weather[days[0]]?.[hour]['transparency']}</h2>
                     </div>
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 text-center">
-                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <h1 className="font-bold text-gray-800">Atm Instability</h1>
                         <p>icon</p>
-                        <h2>data</h2>
+                        <h2 className="font-bold">{weather[days[0]]?.[hour]['lifted_index']}</h2>
                     </div>
                 </div>
 
                 {/* Third row */}
                 <div className="flex flex-row">
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 mr-2 text-center">
-                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <h1 className="font-bold text-gray-800">Wind Speed</h1>
                         <p>icon</p>
-                        <h2>data</h2>
+                        <h2 className="font-bold">{weather[days[0]]?.[hour]['wind10m_speed']}</h2>
                     </div>
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 text-center">
-                        <h1 className="font-bold text-gray-800">Forecast</h1>
+                        <h1 className="font-bold text-gray-800">Wind Direction</h1>
                         <p>icon</p>
-                        <h2>data</h2>
+                        <h2 className="font-bold">{weather[days[0]]?.[hour]['wind10m_direction']}</h2>
                     </div>
                 </div>
             </div>
