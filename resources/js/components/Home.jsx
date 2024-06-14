@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "./css/animation.css";
 
 const Home = () => {
     const [city, setCity] = useState("");
     const [country, setCountry] = useState("");
-    const [loading, setLoading] = useState("");
+    const [loading, setLoading] = useState(true);
     const [weather, setWeather] = useState([]);
     const [generalWeather, setGeneralWeather] = useState([]);
     const [days, setDays] = useState([]);
@@ -20,96 +21,107 @@ const Home = () => {
     };
 
     const formattedDate = today.toLocaleDateString("en-US", options);
-    
+
     function conditionalWeather(weather, daysTmp, hoursTmp) {
         let data = [];
-        if(hoursTmp == null){
-             data = weather[daysTmp];
-        }else{
-             data = weather[daysTmp][hoursTmp];
+        if (hoursTmp == null) {
+            data = weather[daysTmp];
+        } else {
+            data = weather[daysTmp][hoursTmp];
         }
 
+        let cloudCover = data["cloudcover"];
+        let precipitationRate = data["prec_amount"];
+        let precipitationType = data["prec_type"];
+        let relativeHumidity = data["rh2m"];
+        let liftedIndex = data["lifted_index"];
+        var generalWeather = "";
 
-        let cloudCover = data['cloudcover'];
-        let precipitationRate = data['prec_amount'];
-        let precipitationType = data['prec_type'];
-        let relativeHumidity = data['rh2m'];
-        let liftedIndex = data['lifted_index'];
-        var generalWeather = '';
-    
-        cloudCover = parseInt(cloudCover.split('%')[0].trim()); 
+        cloudCover = parseInt(cloudCover.split("%")[0].trim());
         precipitationRate = parseInt(precipitationRate);
         relativeHumidity = parseInt(relativeHumidity);
-        liftedIndex = parseInt(liftedIndex.split(' ')[0].trim()); 
-    
+        liftedIndex = parseInt(liftedIndex.split(" ")[0].trim());
+
         // Total cloud cover less than 20% = Clear
         if (cloudCover <= 20) {
             generalWeather = "Clear";
         }
-    
+
         // Total cloud cover between 20%-60% = Cloudy
         if (cloudCover > 20 && cloudCover <= 60) {
             generalWeather = "Cloudy";
         }
 
-        //cloud cover over 80% 
-        if(cloudCover >= 80){
+        //cloud cover over 80%
+        if (cloudCover >= 80) {
             generalWeather = "Very Cloudy";
         }
-    
+
         // Relative humidity over 90% with total cloud cover less than 60% = Foggy
         if (relativeHumidity > 90 && cloudCover <= 60) {
             generalWeather = "Foggy";
         }
-    
+
         // Precipitation rate less than 4mm/hr with cloud cover more than 80% = Light rain or showers
-        if (precipitationRate < 4 && cloudCover > 80 && precipitationType == 'rain') {
+        if (
+            precipitationRate < 4 &&
+            cloudCover > 80 &&
+            precipitationType == "rain"
+        ) {
             generalWeather = "Light rain or showers";
         }
-    
+
         // Precipitation rate less than 4mm/hr with cloud cover between 60%-80% = Occasional Showers
-        if (precipitationRate < 4 && cloudCover > 60 && cloudCover <= 80 && precipitationType == 'rain') {
+        if (
+            precipitationRate < 4 &&
+            cloudCover > 60 &&
+            cloudCover <= 80 &&
+            precipitationType == "rain"
+        ) {
             generalWeather = "Occasional Showers";
         }
-    
+
         // Precipitation rate less than 4mm/hr less than 60% = Isolated Showers
-        if (precipitationRate < 4 && cloudCover <= 60 && precipitationType == 'rain') {
+        if (
+            precipitationRate < 4 &&
+            cloudCover <= 60 &&
+            precipitationType == "rain"
+        ) {
             generalWeather = "Isolated Showers";
         }
-    
+
         // Precipitation rate over 4mm/hr = Rain
-        if (precipitationRate >= 4 && precipitationType == 'rain') {
+        if (precipitationRate >= 4 && precipitationType == "rain") {
             generalWeather = "Rain";
         }
-    
+
         // Precipitation rate over 4mm/hr = Snow
-        if (precipitationRate >= 4 && precipitationType == 'snow') {
+        if (precipitationRate >= 4 && precipitationType == "snow") {
             generalWeather = "Snow";
         }
-    
+
         // Precipitation type to be ice pellets or freezing rain = Mixed
-        if (precipitationType == 'icep' || precipitationType == 'frzr') {
+        if (precipitationType == "icep" || precipitationType == "frzr") {
             generalWeather = "Mixed";
         }
-    
+
         // Lifted Index less than -5 with precipitation rate below 4mm/hr = Thunderstorm possible
         if (liftedIndex < -5 && precipitationRate < 4) {
             generalWeather = "Thunderstorm possible";
         }
-    
+
         // Lifted Index less than -5 with precipitation rate over 4mm/hr = Thunderstorm
         if (liftedIndex < -5 && precipitationRate >= 4) {
             generalWeather = "Thunderstorm";
         }
-    
+
         // Lifted index less than -5 with precipitation type rain = Thunderstorm with rain
-        if (liftedIndex < -5 && precipitationType == 'rain') {
+        if (liftedIndex < -5 && precipitationType == "rain") {
             generalWeather = "Thunderstorm with rain";
         }
-    
+
         return generalWeather;
     }
-    
 
     const determineWeather = (weather) => {
         var daysTmp = Object.keys(weather);
@@ -117,16 +129,18 @@ const Home = () => {
         let generalWeatherTmp = [];
         let weatherTmp = [];
 
-        generalWeatherTmp[0] = conditionalWeather(weather, daysTmp[0], hoursTmp);
-        generalWeatherTmp[1] = conditionalWeather(weather, daysTmp[1], null)
+        generalWeatherTmp[0] = conditionalWeather(
+            weather,
+            daysTmp[0],
+            hoursTmp
+        );
+        generalWeatherTmp[1] = conditionalWeather(weather, daysTmp[1], null);
         generalWeatherTmp[2] = conditionalWeather(weather, daysTmp[2], null);
-
 
         setDays(daysTmp);
         setHour(hoursTmp[0]);
         setGeneralWeather(generalWeatherTmp);
         setWeather(weather);
-
     };
 
     const fetchData = async () => {
@@ -201,13 +215,24 @@ const Home = () => {
             setLoading(false);
         }
     };
-    
 
     useEffect(() => {
+        let timer = setTimeout(() => {
+            setLoading(true);
+        }, 2000);
+
         fetchData();
+
+        return () => {
+            clearTimeout(timer);
+        };
     }, []);
 
-    return (
+    return loading ? (
+        <div className="center-container">
+            <div className="loader"></div>
+        </div>
+    ) : (
         <div className="antialiased min-h-screen bg-gray-100 flex items-center">
             <div className="w-full max-w-sm mx-auto">
                 {/* Search Bar */}
@@ -251,7 +276,7 @@ const Home = () => {
                                     {city}, {country}
                                 </div>
                                 <div className="text-3xl font-bold text-gray-800">
-                                    {weather[days[0]]?.[hour]['temp2m'] + '°C'}
+                                    {weather[days[0]]?.[hour]["temp2m"] + "°C"}
                                 </div>
                                 <div className="text-xs text-gray-600 font-semibold">
                                     {generalWeather[0]}
@@ -265,13 +290,18 @@ const Home = () => {
                             <div className="flex-1 text-center pt-4 border-r px-5 dark:border-gray-500">
                                 <div className="">{days[1]}</div>
                                 <div className="">icon</div>
-                                <div className="font-semibold"> {weather[days[1]]?.['temp2m'] + '°C'}</div>
+                                <div className="font-semibold">
+                                    {" "}
+                                    {weather[days[1]]?.["temp2m"] + "°C"}
+                                </div>
                             </div>
                             <div className="flex-1 text-center pt-4 px-5">
                                 <div className="">{days[2]}</div>
                                 <div className="">icon</div>
-                                <div className="font-semibold"> {weather[days[1]]?.['temp2m'] + '°C'}</div>
-
+                                <div className="font-semibold">
+                                    {" "}
+                                    {weather[days[1]]?.["temp2m"] + "°C"}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -281,25 +311,37 @@ const Home = () => {
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 mr-2 text-center">
                         <h1 className="font-bold text-gray-800">Cloud Cover</h1>
                         <p>icon</p>
-                        <h2 className="font-bold">{weather[days[0]]?.[hour]['cloudcover']}</h2>
+                        <h2 className="font-bold">
+                            {weather[days[0]]?.[hour]["cloudcover"]}
+                        </h2>
                     </div>
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 text-center">
                         <h1 className="font-bold text-gray-800">Atm Seeing</h1>
                         <p>icon</p>
-                        <h2 className="font-bold">{weather[days[0]]?.[hour]['seeing']}</h2>
+                        <h2 className="font-bold">
+                            {weather[days[0]]?.[hour]["seeing"]}
+                        </h2>
                     </div>
                 </div>
                 {/* Second Row */}
                 <div className="flex flex-row">
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 mr-2 text-center">
-                        <h1 className="font-bold text-gray-800">Transparency</h1>
+                        <h1 className="font-bold text-gray-800">
+                            Transparency
+                        </h1>
                         <p>icon</p>
-                        <h2 className="font-bold">{weather[days[0]]?.[hour]['transparency']}</h2>
+                        <h2 className="font-bold">
+                            {weather[days[0]]?.[hour]["transparency"]}
+                        </h2>
                     </div>
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 text-center">
-                        <h1 className="font-bold text-gray-800">Atm Instability</h1>
+                        <h1 className="font-bold text-gray-800">
+                            Atm Instability
+                        </h1>
                         <p>icon</p>
-                        <h2 className="font-bold">{weather[days[0]]?.[hour]['lifted_index']}</h2>
+                        <h2 className="font-bold">
+                            {weather[days[0]]?.[hour]["lifted_index"]}
+                        </h2>
                     </div>
                 </div>
 
@@ -308,12 +350,18 @@ const Home = () => {
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 mr-2 text-center">
                         <h1 className="font-bold text-gray-800">Wind Speed</h1>
                         <p>icon</p>
-                        <h2 className="font-bold">{weather[days[0]]?.[hour]['wind10m_speed']}</h2>
+                        <h2 className="font-bold">
+                            {weather[days[0]]?.[hour]["wind10m_speed"]}
+                        </h2>
                     </div>
                     <div className="bg-white shadow rounded-lg p-5 w-1/2 border-solid mt-2 text-center">
-                        <h1 className="font-bold text-gray-800">Wind Direction</h1>
+                        <h1 className="font-bold text-gray-800">
+                            Wind Direction
+                        </h1>
                         <p>icon</p>
-                        <h2 className="font-bold">{weather[days[0]]?.[hour]['wind10m_direction']}</h2>
+                        <h2 className="font-bold">
+                            {weather[days[0]]?.[hour]["wind10m_direction"]}
+                        </h2>
                     </div>
                 </div>
             </div>
