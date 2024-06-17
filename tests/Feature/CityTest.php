@@ -50,6 +50,7 @@ class CityTest extends TestCase
             'country' => "colombia"
         ]);
 
+
         $city->assertStatus(404);
     }
 

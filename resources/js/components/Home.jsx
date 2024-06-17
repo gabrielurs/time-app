@@ -13,6 +13,7 @@ const Home = () => {
     const [iconsDays, setIconsDays] = useState([]);
     const [cityInput, setCityInput] = useState("");
     const [countryInput, setCountryInput] = useState("");
+    const [notFound, setNotFound] = useState(false);
 
     const today = new Date();
 
@@ -354,6 +355,8 @@ const Home = () => {
 
     const fetchData = async () => {
         try {
+            setNotFound(false);
+
             const mapResponse = await axios.get(
                 `${import.meta.env.VITE_API_URL}/map`
             );
@@ -361,7 +364,6 @@ const Home = () => {
             const mapData = await mapResponse.data;
             setCity(mapData.city);
             setCountry(mapData.country);
-            console.log(mapData);
 
             const cityResponse = await axios.post(
                 `${import.meta.env.VITE_API_URL}/city`,
@@ -370,6 +372,9 @@ const Home = () => {
 
             if (!cityResponse.data) throw new Error("City data is empty");
             const cityData = await cityResponse.data;
+            if (cityResponse.status == 404) {
+                setNotFound(true);
+            }
 
             const astroResponse = await axios.post(
                 `${import.meta.env.VITE_API_URL}/astro`,
@@ -420,7 +425,8 @@ const Home = () => {
                 throw new Error("Weather data is empty");
             determineWeather(translateWeatherResponse.data);
         } catch (err) {
-            console.log(err);
+            // console.log(err);
+            setNotFound(true);
         } finally {
             setLoading(false);
         }
@@ -428,7 +434,10 @@ const Home = () => {
 
     const fectchDataBySearch = async (city, country) => {
         try {
+            
             setLoading(true);
+            setNotFound(false);
+
 
             setCity(city);
             setCountry(country);
@@ -438,6 +447,9 @@ const Home = () => {
                 { city: city, country: country }
             );
             if (!cityResponse.data) throw new Error("City data is empty");
+
+            
+         
             const cityData = await cityResponse.data;
 
             const astroResponse = await axios.post(
@@ -489,7 +501,8 @@ const Home = () => {
                 throw new Error("Weather data is empty");
             determineWeather(translateWeatherResponse.data);
         } catch (err) {
-            console.log(err);
+            // console.log(err);
+            setNotFound(true);
         } finally {
             setLoading(false);
         }
@@ -530,6 +543,56 @@ const Home = () => {
     return loading ? (
         <div className="center-container">
             <div className="loader"></div>
+        </div>
+    ) : notFound ? (
+        <div className="antialiased min-h-screen bg-gray-100 flex items-center">
+            <div className="customCenter w-full max-w-sm mx-auto mt-5 mb-5">
+                {/* Search Bar */}
+                <div className="flex items-center mb-2">
+                    <div className="relative w-full flex">
+                        <input
+                            type="text"
+                            className="bg-white border text-black text-sm rounded-lg flex w-1/2 p-2.5"
+                            placeholder="City"
+                            onChange={(e) => {
+                                setCityInput(e.target.value);
+                            }}
+                        />
+                        <input
+                            type="text"
+                            className="bg-white border text-black text-sm rounded-lg flex w-1/2 p-2.5"
+                            placeholder="Country"
+                            onChange={(e) => {
+                                setCountryInput(e.target.value);
+                            }}
+                        />
+                    </div>
+                    <button
+                        className="inline-flex items-center py-2.5 px-3 ml-2 text-sm font-medium text-white bg-black rounded-lg border hover:bg-white hover:text-black"
+                        onClick={() => validate(cityInput, countryInput)}
+                    >
+                        <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            ></path>
+                        </svg>
+                    </button>
+                </div>
+                <div className="bg-white shadow rounded-lg p-5 w-full border-solid">
+                    <p className="text-black text-center">
+                        We couldn't find the city
+                    </p>
+                </div>
+            </div>
         </div>
     ) : (
         <div className="antialiased min-h-screen bg-gray-100 flex items-center">
