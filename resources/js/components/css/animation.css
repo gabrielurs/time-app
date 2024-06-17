@@ -34,3 +34,10 @@
     66% {inset: -8px; transform: rotate(180deg)}
     100% {inset: 0; transform: rotate(180deg)}
 }
+
+
+@media only screen and (max-width: 450px) {
+    .customCenter{
+        margin: 15px;
+    }
+}
