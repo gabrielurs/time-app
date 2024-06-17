@@ -514,10 +514,13 @@ const Home = () => {
         else return true;
     };
 
-    const validate = (city, country) => {
-        if (city == "" || country == "") {
-            return false;
+    const handleKeyDown = (event) => {
+        if (event.key === "Enter") {
+            validate(cityInput, countryInput);
         }
+    };
+
+    const validate = (city, country) => {
 
         let isValid = validateQueryParam(city);
         isValid = validateQueryParam(country);
@@ -557,6 +560,7 @@ const Home = () => {
                             onChange={(e) => {
                                 setCityInput(e.target.value);
                             }}
+                            onKeyDown={handleKeyDown}
                         />
                         <input
                             type="text"
@@ -565,6 +569,7 @@ const Home = () => {
                             onChange={(e) => {
                                 setCountryInput(e.target.value);
                             }}
+                            onKeyDown={handleKeyDown}
                         />
                     </div>
                     <button
@@ -607,6 +612,7 @@ const Home = () => {
                             onChange={(e) => {
                                 setCityInput(e.target.value);
                             }}
+                            onKeyDown={handleKeyDown}
                         />
                         <input
                             type="text"
@@ -615,6 +621,7 @@ const Home = () => {
                             onChange={(e) => {
                                 setCountryInput(e.target.value);
                             }}
+                            onKeyDown={handleKeyDown}
                         />
                     </div>
                     <button
