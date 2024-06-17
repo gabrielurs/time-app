@@ -126,6 +126,7 @@ class CityController extends Controller
     {
         $validated = $request->validate([
             'city' => 'required|string|max:50',
+            'country' => 'required|string|max:50',
         ]);
 
         if (!$validated) {
@@ -133,7 +134,9 @@ class CityController extends Controller
         }
 
         try {
-            $response = City::where('city', $request->city)->first();
+
+            $response = City::where('city', $request->city)->where('country', $request->country)->first();
+
             $city['lat'] = $response->lat;
             $city['lng'] = $response->lng;
 

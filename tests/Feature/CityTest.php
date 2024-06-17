@@ -30,8 +30,7 @@ class CityTest extends TestCase
 
         $response = $this->get('api/map');
 
-        $city = $this->postJson('api/city', ['city' => $response['city']]);
-
+        $city = $this->postJson('api/city', ['city' => $response['city'], 'country' => $response['country']]);
 
         $this->assertNotEmpty($response->json());
         $this->assertJson($response->getContent());
@@ -46,14 +45,18 @@ class CityTest extends TestCase
 
     public function test_invalid_user_map_position_and_does_not_exists_in_database_and_returns_error(): void
     {
-        $city = $this->postJson('api/city', ['city' => "albahaca"]);
+        $city = $this->postJson('api/city', [
+            'city' => "albahaca",
+            'country' => "colombia"
+        ]);
+
         $city->assertStatus(404);
     }
 
     public function test_obtain_city_astro_weather_using_lat_len(): void
     {
         $response = $this->get('api/map');
-        $city = $this->postJson('api/city', ['city' => $response['city']]);
+        $city = $this->postJson('api/city', ['city' => $response['city'], 'country' => $response['country']]);
 
 
         $this->assertNotEmpty($city->json());
@@ -76,7 +79,7 @@ class CityTest extends TestCase
     public function test_obtain_city_meteo_weather_using_lat_len(): void
     {
         $response = $this->get('api/map');
-        $city = $this->postJson('api/city', ['city' => $response['city']]);
+        $city = $this->postJson('api/city', ['city' => $response['city'], 'country' => $response['country']]);
 
 
         $this->assertNotEmpty($city->json());
@@ -114,7 +117,7 @@ class CityTest extends TestCase
     public function test_translate_astro_data_to_json(): void
     {
         $response = $this->get('api/map');
-        $city = $this->postJson('api/city', ['city' => $response['city']]);
+        $city = $this->postJson('api/city', ['city' => $response['city'], 'country' => $response['country']]);
 
         $this->assertNotEmpty($city->json());
         $this->assertJson($city->getContent());
@@ -139,7 +142,7 @@ class CityTest extends TestCase
     public function test_translate_meteo_data_to_json(): void
     {
         $response = $this->get('api/map');
-        $city = $this->postJson('api/city', ['city' => $response['city']]);
+        $city = $this->postJson('api/city', ['city' => $response['city'], 'country' => $response['country']]);
 
         $this->assertNotEmpty($city->json());
         $this->assertJson($city->getContent());
@@ -164,7 +167,7 @@ class CityTest extends TestCase
     public function test_unite_translations_and_return_json(): void
     {
         $response = $this->get('api/map');
-        $city = $this->postJson('api/city', ['city' => $response['city']]);
+        $city = $this->postJson('api/city', ['city' => $response['city'], 'country' => $response['country']]);
 
         $this->assertNotEmpty($city->json());
         $this->assertJson($city->getContent());
