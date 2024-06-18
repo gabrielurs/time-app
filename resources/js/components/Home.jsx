@@ -346,7 +346,6 @@ const Home = () => {
 
         setDays(daysTmp);
         setHour(hoursTmp[0]);
-        console.log(iconsTmp);
 
         setIconsDays(iconsTmp);
         setGeneralWeather(generalWeatherTmp);
@@ -434,10 +433,8 @@ const Home = () => {
 
     const fectchDataBySearch = async (city, country) => {
         try {
-            
             setLoading(true);
             setNotFound(false);
-
 
             setCity(city);
             setCountry(country);

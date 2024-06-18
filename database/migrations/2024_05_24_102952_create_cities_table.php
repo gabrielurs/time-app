@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('country');
             $table->string('iso2');
             $table->string('iso3');
-            $table->string('capital');
             $table->string('admin_name');
+            $table->string('capital');
             $table->string('population');
             $table->string('id')->primary();
             $table->timestamps();
