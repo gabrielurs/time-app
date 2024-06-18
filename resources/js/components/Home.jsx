@@ -5,7 +5,7 @@ import "./css/animation.css";
 const Home = () => {
     const [city, setCity] = useState("");
     const [country, setCountry] = useState("");
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [weather, setWeather] = useState([]);
     const [generalWeather, setGeneralWeather] = useState([]);
     const [days, setDays] = useState([]);
@@ -355,6 +355,7 @@ const Home = () => {
     const fetchData = async () => {
         try {
             setNotFound(false);
+            setLoading(true);
 
             const mapResponse = await axios.get(
                 `${import.meta.env.VITE_API_URL}/map`
@@ -435,7 +436,6 @@ const Home = () => {
         try {
             setLoading(true);
             setNotFound(false);
-
             setCity(city);
             setCountry(country);
 
@@ -529,15 +529,7 @@ const Home = () => {
     };
 
     useEffect(() => {
-        let timer = setTimeout(() => {
-            setLoading(true);
-        }, 2000);
-
         fetchData();
-
-        return () => {
-            clearTimeout(timer);
-        };
     }, []);
 
     return loading ? (

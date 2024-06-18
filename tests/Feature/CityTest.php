@@ -32,9 +32,6 @@ class CityTest extends TestCase
 
         $city = $this->postJson('api/city', ['city' => $response['city'], 'country' => $response['country']]);
 
-        dd($city->json());
-        
-
         $this->assertNotEmpty($response->json());
         $this->assertJson($response->getContent());
         $this->assertEquals(200, $response->getStatusCode());
